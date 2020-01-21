@@ -58,7 +58,12 @@ function setup() {
 
   volKnob = new Knob(35, widthC - 70, heightC - 70, 0, 100, 50, 100);
 
-  sliderr = new Slider(600, 400, 100, 20, 'horizontal');
+
+  sliderh = new Slider(500, 500, 7, 20, 100, 50, 'horizontal');
+  sliderh.setOrientation();
+
+  sliderv = new Slider(650, 500, 7, 20, 100, 80, 'vertical');
+  sliderv.setOrientation();
 } 
 
 function draw() {
@@ -86,7 +91,9 @@ function draw() {
   
   updateChord();
   updateScaleNoteNames();
-  sliderr.update();
+
+  sliderh.update();
+  sliderv.update();
   //sliderr.sliderHover(mouseX, mouseY);
 }
 
@@ -125,7 +132,8 @@ function mousePressed() {
       radioBoxColumns[column][accidental].clicked(mouseX, mouseY, column, accidental);
     }
   }
-  sliderr.active();
+  sliderh.active();
+  sliderv.active();
 }
 
 function mouseReleased() {
@@ -136,6 +144,8 @@ function mouseReleased() {
     oscKnobs[knob].inactive();
 
   }
+  sliderh.inactive();
+  sliderv.inactive();
 
 }
 

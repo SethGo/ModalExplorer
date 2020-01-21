@@ -4,7 +4,7 @@ class Knob {
     this.y = locy;
     this.lowNum = lowNum;
     this.hiNum = hiNum;
-    this.notches = notches; // n-1
+    this.notches = notches;
     this.rotateMe = map(defaultNum, lowNum, hiNum, 0, -280);
     this.currentRot = map(defaultNum, lowNum, hiNum, 0, -280);
     this.radius = radius;
@@ -178,83 +178,145 @@ class RadioBox {
 
 
 class Slider {
-  constructor(x, y, length, defaultVal, orientation) {
+  // to do:
+  // get initial value to work for horizontal slider
+  constructor(x, y, w, h, length, defaultVal, orientation) {
     this.x = x;
     this.y = y;
+    this.w = w;
+    this.h = h;
     this.length = length;
     this.defaultVal = defaultVal
     this.orientation = orientation; // 'horizontal' or 'vertical'
 
+    this.x2 = x + length;
+    this.y2 = y + h / 2;
+    this.handleX = x;
+    this.handleY = y;
     this.dragging = false;
     this.hover = false;
-    this.rectX = x;
-    this.rectY;
-    this.rectWidth = 7;
-    this.rectHeight = 20;
-    this.stroke = 0;
+    this.offset;
+    this.stroke;
+    this.sliderValue = defaultVal;
   }
 
+  setOrientation() {
+    if (this.orientation === 'vertical') { // defaults to horizontal
+      //[this.w, this.h] = [this.h, this.w];
+      this.x2 = this.x;
+      this.y2 = this.y + this.length + this.w / 2;
+      this.handleY = floor(map(this.defaultVal, this.y + this.length, this.y, 0, 100));
+    } else {
+      this.handleX = floor(map(this.defaultVal, this.x, this.x + this.length, 0, 100));
+    }
+  }
 
-  sliderHover(x, y) {
-    if (x > this.x - this.rectWidth / 2 && x < this.x + this.rectWidth / 2 &&
-      y > this.y - this.rectHeight / 2 && y < this.y + this.rectHeight / 2) {
+  determineValue() {
+    if (this.orientation === 'vertical') {
+      this.sliderValue = floor(map(this.handleY, this.y + this.length, this.y, 0, 100));
+    } else {
+      this.sliderValue = floor(map(this.handleX, this.x, this.x + this.length, 0, 100));
+    }
+
+
+  }
+
+  determineHover() {
+    let upperEdge = this.handleY;
+    let lowerEdge = this.handleY + this.h;
+    let rightEdge = this.handleX - this.w / 2;
+    let leftEdge = this.handleX + this.w;
+
+    if (this.orientation === 'vertical') {
+      upperEdge = this.handleY;
+      lowerEdge = this.handleY + this.h / 2;
+      rightEdge = this.handleX - this.h / 2;
+      leftEdge = this.handleX + this.h / 2;
+
+    }
+
+    if (mouseX > rightEdge && mouseX < leftEdge && mouseY > upperEdge && mouseY < lowerEdge) {
       this.hover = true;
-      //print('rolling over');
-      this.stroke = 95;
     }
     else {
       this.hover = false;
+    }
+  }
+
+  drawSliderHandle() {
+    if (this.dragging) {
+      if (this.orientation === 'vertical') { // handle extreemes for vert
+        this.handleY = mouseY + this.offset;
+        if (this.handleY <= this.y) {
+          this.handleY = this.y;
+        } else if (this.handleY >= this.y + this.length) {
+          this.handleY = this.y + this.length;
+        }
+
+      } else {  // handle extreemes for horiz
+        this.handleX = mouseX + this.offset;
+        if (this.handleX < this.x) {
+          this.handleX = this.x;
+        } else if (this.handleX >= this.x + this.length) {
+          this.handleX = this.x + this.length;
+        }
+      }
+    }
+
+    if (this.handleX < this.x) {
+      this.handleX = this.x;
+    }
+
+    if (this.dragging || this.hover) {
+      this.stroke = 100;
+    } else {
       this.stroke = 0;
     }
 
+    stroke(this.stroke);
+    rectMode(CENTER);
+    if (this.orientation === 'vertical') {
+      rect(this.handleX, this.handleY + this.w / 2, this.h, this.w, 5);
+    } else {
+      rect(this.handleX, this.handleY + this.h / 2, this.w, this.h, 5);
+    }
+    rectMode(CORNER);
+    stroke(0);
+  }
+
+  drawTrack() {
+    if (this.orientation === 'vertical') {
+      line(this.x, this.y + this.w / 2, this.x2, this.y2); // track
+    } else {
+      line(this.x, this.y + this.h / 2, this.x2, this.y2); // track
+    }
+  }
+
+  update() {
+    this.determineHover();
+    this.drawTrack();
+    this.drawSliderHandle();
+    this.determineValue();
+
+    if (this.dragging) {
+      print(this.sliderValue);
+    }
   }
 
   active() {
     if (this.hover) {
       this.dragging = true;
-      this.rectX = mouseX;
-      print('stuff active bhkjhaerklgh', mouseX);
+      if (this.orientation === 'vertical') {
+        this.offset = this.handleY - mouseY;
+      } else {
+        this.offset = this.handleX - mouseX;
 
-    } else {
-
+      }
     }
-
-
   }
 
   inactive() {
     this.dragging = false;
   }
-
-  update() {
-    let x2;
-    let y2;
-
-    if (this.orientation === 'horizontal') {
-      x2 = this.x + this.length;
-      y2 = this.y;
-      this.rectY = this.y;
-    } else if (this.orientation === 'vertical') {
-      x2 = this.x;
-      y2 = this.y + this.length;
-      [this.rectWidth, this.rectHeight] = [this.rectHeight, this.rectWidth];
-      this.rectY = this.y + this.length;
-    }
-
-    line(this.x, this.y, x2, y2); // track
-
-    rectMode(CENTER);
-    stroke(this.stroke);
-    rect(this.rectX, this.rectY, this.rectWidth, this.rectHeight, 5) // slider
-    rectMode(CORNER);
-
-    this.sliderHover(mouseX, mouseY);
-
-
-  }
-
-
-
-
 
 }
