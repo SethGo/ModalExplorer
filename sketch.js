@@ -50,9 +50,9 @@ function setup() {
   updateScaleNoteNames();
 
   keyKnob = new Knob(20, nonTonicRadiosX - 60, nonTonicRadiosY + 50, 0, 11, 3, 12);
-  
+
   for (i = 0; i < 4; i++) {
-    voicingKnobs[i] = new Knob(28, voicingKnobX, voicingKnobY + voicingVertSpaceFactor * i, 0, 6, 6 - i * 2, 7);
+    voicingKnobs[i] = new Knob(28, voicingKnobX, voicingKnobY + voicingVertSpaceFactor * i, 0, 7, 7 - i * 2, 8);
     oscKnobs[i] = new Knob(15, voicingKnobX + 110, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, 1, 4);
   }
 
@@ -64,7 +64,7 @@ function setup() {
 
   sliderv = new Slider(650, 500, 7, 20, 100, 80, 'vertical');
   sliderv.setOrientation();
-} 
+}
 
 function draw() {
   background(255);
@@ -88,7 +88,7 @@ function draw() {
     voicingKnobs[knob].update();
     oscKnobs[knob].update();
   }
-  
+
   updateChord();
   updateScaleNoteNames();
 
@@ -114,7 +114,7 @@ function keyPressed() {
   } else { // Handle bad input
     //stopOscillators();
     //harmonicFunc = "Invalid key. Press 1-7";
-  }  
+  }
 
 
 }
@@ -151,15 +151,24 @@ function mouseReleased() {
 
 function updateChord() {
   for (knob = 0; knob < voicingKnobs.length; knob++) {
-    voicingKernel[knob] = voicingKnobs[knob].knobValue;
+    let val = voicingKnobs[knob].knobValue;
+    if (val > 0) {
+      voicingKernel[knob] = voicingKnobs[knob].knobValue; // -1 because 0 position is note off
+    } else {
+      voicingKernel[knob] = ''; // note off
+    }
+    voicingKernel[knob] = voicingKnobs[knob].knobValue - 1;
   }
   //voicingKernel = voicingKernel;//.reverse();
 
   // Set voicing functions and named notes based on the voicing-kernel
   for (voice = 0; voice < voicingKernel.length; voice++) {
-    chord[voice] = (voicingKernel[voice] + (pressed - 1)) % 7;
+    if (voicingKernel[voice] < 0) { // if voice is turned off
+      chord[voice] = '';
+    } else {
+      chord[voice] = (voicingKernel[voice] + (pressed - 1)) % 7;
+    }
     chordNotesNamed[voice] = scaleNotes[chord[voice]];
-    //print(voicingKnobs[voice].knobValue);
   }
 
   // print('voicing Kernel: ' + voicingKernel);
@@ -171,7 +180,7 @@ function updateChord() {
   //   voicingNotes[i] = scaleNotes[voicing[i]];
   // }
   //put this into a loop
- // oscB.freq(freqsOctave1[noteNames.indexOf(voicingNotes[0])]);
+  // oscB.freq(freqsOctave1[noteNames.indexOf(voicingNotes[0])]);
 }
 
 
@@ -225,15 +234,14 @@ function drawText() {
     } else {
       note = '';
     }
-  
-    if(typeof(voicingVal) === null || voicingVal === undefined || voicingVal === ""){
-      console.log(voicingVal, 'LOLLLLL');
-    }
 
-    // grab note from voicingKernel[knob] somehow
-   text(note, voicingKnobX + 50, voicingKnobY + voicingVertSpaceFactor * knob)
-   text(voicingVal, voicingKnobX - 60, voicingKnobY + voicingVertSpaceFactor * knob);
-   text(oscVal, voicingKnobX + 160, voicingKnobY + voicingVertSpaceFactor * knob);
+    // if(typeof(voicingVal) === null || voicingVal === undefined || voicingVal === ""){
+    //   console.log(voicingVal, 'LOLLLLL');
+    // }
+
+    text(note, voicingKnobX + 50, voicingKnobY + voicingVertSpaceFactor * knob)
+    text(voicingVal, voicingKnobX - 60, voicingKnobY + voicingVertSpaceFactor * knob);
+    text(oscVal, voicingKnobX + 160, voicingKnobY + voicingVertSpaceFactor * knob);
   }
 
   text('Output', widthC - 70, heightC - 115)
@@ -246,27 +254,30 @@ function interpretVoicingVal(voicingKnobValue) {
 
   switch (floor(voicingKnobValue)) {
     case 0:
-      displayText = 'root'
+      displayText = '-'
       break;
     case 1:
-      displayText = '2nd'
+      displayText = 'root'
       break;
     case 2:
-      displayText = '3rd'
+      displayText = '2nd'
       break;
     case 3:
-      displayText = '4th'
+      displayText = '3rd'
       break;
     case 4:
-      displayText = '5th'
+      displayText = '4th'
       break;
     case 5:
-      displayText = '6th'
+      displayText = '5th'
       break;
     case 6:
+      displayText = '6th'
+      break;
+    case 7:
       displayText = '7th'
       break;
-    default: 
+    default:
       displayText = 'Loading'
   }
   return displayText;
@@ -287,7 +298,7 @@ function interpretOscVal(oscKnobValue) {
     case 3:
       result = 'sawtooth'
       break;
-    default: 
+    default:
       displayText = 'Loading'
   }
   return result;
