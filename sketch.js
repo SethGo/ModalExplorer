@@ -1,3 +1,4 @@
+// spacing and positioning
 var widthC = 800;
 var heightC = 650;
 
@@ -5,26 +6,30 @@ var radioSize = 20;
 var horizSpacingFactor = 70; // space between each function's column
 var vertSpacingFactor = 30; // space between boxes in same column
 var radioOffset = 10; // Vertical offset to make room for the number on top
-var radioRadius = 3;
 var nonTonicRadiosX = 200;
 var nonTonicRadiosY = 100;
 var voicingKnobX = 143;
 var voicingKnobY = 300;
 var voicingVertSpaceFactor = 70;
 
+// gui objects
 var radioBoxColumns = [];
+var voicingKnobs = [];
+var oscKnobs = [];
+var volKnob;
+var voiceVolSliders = [];
+
+// program control variables
 var alterationArr;
 var scaleKernelAfterAlteration;
 var scaleNotes = [];
 var keyKnobVal;
-var voicingKnobs = [];
-var oscKnobs = [];
-var volKnob;
 var voicingKernel = [];
 var chord = [];
 var chordNotesNamed = []
 var pressed;
 
+// notes and freqs
 var noteNames = ["A", "A#/Bb", "B", "C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab"];
 
 
@@ -58,9 +63,10 @@ function setup() {
 
   volKnob = new Knob(35, widthC - 70, heightC - 70, 0, 100, 50, 100);
 
-
-  sliderh = new Slider(500, 500, 7, 20, 100, 50, 'horizontal');
-  sliderh.setOrientation();
+  for (voice=0; voice < voicingKnobs.length; voice++) {
+    voiceVolSliders[voice] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * voice - 10, 7, 20, 50, 50, 'horizontal');
+    voiceVolSliders[voice].setOrientation();
+  }
 
   sliderv = new Slider(650, 500, 7, 20, 100, 80, 'vertical');
   sliderv.setOrientation();
@@ -79,7 +85,6 @@ function draw() {
   drawText();
 
   keyKnob.update()
-  //print(keyKnob.rotateMe);
   keyKnobVal = floor(keyKnob.knobValue);
   volKnob.update();
 
@@ -87,12 +92,12 @@ function draw() {
   for (knob = 0; knob < voicingKnobs.length; knob++) {
     voicingKnobs[knob].update();
     oscKnobs[knob].update();
+    voiceVolSliders[knob].update();
   }
 
   updateChord();
   updateScaleNoteNames();
 
-  sliderh.update();
   sliderv.update();
   //sliderr.sliderHover(mouseX, mouseY);
 }
@@ -122,17 +127,18 @@ function keyPressed() {
 
 function mousePressed() {
   keyKnob.active();
+  volKnob.active();
   for (knob = 0; knob < voicingKnobs.length; knob++) {
     voicingKnobs[knob].active();
     oscKnobs[knob].active();
-    volKnob.active();
+    voiceVolSliders[knob].active();
   }
   for (column = 1; column < radioBoxColumns.length; column++) {
     for (accidental = 0; accidental < 3; accidental++) {
       radioBoxColumns[column][accidental].clicked(mouseX, mouseY, column, accidental);
     }
   }
-  sliderh.active();
+
   sliderv.active();
 }
 
@@ -142,9 +148,9 @@ function mouseReleased() {
   for (knob = 0; knob < voicingKnobs.length; knob++) {
     voicingKnobs[knob].inactive();
     oscKnobs[knob].inactive();
-
+    voiceVolSliders[knob].inactive();
   }
-  sliderh.inactive();
+
   sliderv.inactive();
 
 }

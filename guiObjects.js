@@ -117,7 +117,7 @@ class RadioBox {
     fill(220, 0, 220, this.alpha);
     stroke(this.stroke);
     strokeWeight(2);
-    rect(this.x, this.y, radioSize, radioSize, radioRadius);
+    rect(this.x, this.y, radioSize, radioSize, 4);
     stroke(0);
   }
 
@@ -255,9 +255,7 @@ class Slider {
 
       } else {  // handle extreemes for horiz
         this.handleX = mouseX + this.offset;
-        if (this.handleX < this.x) {
-          this.handleX = this.x;
-        } else if (this.handleX >= this.x + this.length) {
+        if (this.handleX >= this.x + this.length) {
           this.handleX = this.x + this.length;
         }
       }
