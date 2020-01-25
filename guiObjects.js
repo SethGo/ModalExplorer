@@ -18,7 +18,6 @@ class Knob {
 
     this.update = function () {
       push();
-
       translate(this.x, this.y);
       if (dist(this.x, this.y, mouseX, mouseY) < this.radius) {
         this.mouseOver = true;
@@ -47,10 +46,7 @@ class Knob {
           this.rotateMe = 0;
         }
 
-
         this.knobValue = floor(map(this.rotateMe, -280, 0, hiNum, lowNum));
-        //print(this.knobValue);
-        //print(this.rotateMe);
         rotate(radians(-this.rotateMe)); // change degrees to radians
       }
       else {
@@ -176,10 +172,7 @@ class RadioBox {
   }
 }
 
-
 class Slider {
-  // to do:
-  // get initial value to work for horizontal slider
   constructor(x, y, w, h, length, defaultVal, orientation) {
     this.x = x;
     this.y = y;
@@ -187,7 +180,7 @@ class Slider {
     this.h = h;
     this.length = length;
     this.defaultVal = defaultVal
-    this.orientation = orientation; // 'horizontal' or 'vertical'
+    this.orientation = orientation; // 'horizontal' or 'vertical', (else statments throughout the class will go to horizontal)
 
     this.x2 = x + length;
     this.y2 = y + h / 2;
@@ -200,14 +193,12 @@ class Slider {
     this.sliderValue = defaultVal;
   }
 
-  setOrientation() {
-    if (this.orientation === 'vertical') { // defaults to horizontal
-      //[this.w, this.h] = [this.h, this.w];
-      this.x2 = this.x;
-      this.y2 = this.y + this.length + this.w / 2;
+
+  setDefault() {
+    if (this.orientation === 'vertical') { 
       this.handleY = floor(map(this.defaultVal, this.y + this.length, this.y, 0, 100));
     } else {
-      this.handleX = floor(map(this.defaultVal, this.x, this.x + this.length, 0, 100));
+      this.handleX = floor(map(this.defaultVal, 0, 100, this.x, this.x + this.length));
     }
   }
 
@@ -217,8 +208,6 @@ class Slider {
     } else {
       this.sliderValue = floor(map(this.handleX, this.x, this.x + this.length, 0, 100));
     }
-
-
   }
 
   determineHover() {
@@ -232,7 +221,6 @@ class Slider {
       lowerEdge = this.handleY + this.h / 2;
       rightEdge = this.handleX - this.h / 2;
       leftEdge = this.handleX + this.h / 2;
-
     }
 
     if (mouseX > rightEdge && mouseX < leftEdge && mouseY > upperEdge && mouseY < lowerEdge) {
@@ -258,11 +246,10 @@ class Slider {
         if (this.handleX >= this.x + this.length) {
           this.handleX = this.x + this.length;
         }
+        if (this.handleX < this.x) {
+          this.handleX = this.x;
+        }
       }
-    }
-
-    if (this.handleX < this.x) {
-      this.handleX = this.x;
     }
 
     if (this.dragging || this.hover) {
@@ -273,21 +260,25 @@ class Slider {
 
     stroke(this.stroke);
     rectMode(CENTER);
+
+    let tempW = this.w;
+    let tempH = this.h;
     if (this.orientation === 'vertical') {
-      rect(this.handleX, this.handleY + this.w / 2, this.h, this.w, 5);
-    } else {
-      rect(this.handleX, this.handleY + this.h / 2, this.w, this.h, 5);
+      [tempW, tempH] = [tempH, tempW];
     }
+
+    rect(this.handleX, this.handleY + tempH / 2, tempW, tempH, 5);
     rectMode(CORNER);
     stroke(0);
   }
 
   drawTrack() {
+    let tempW = this.w;
+    let tempH = this.h;
     if (this.orientation === 'vertical') {
-      line(this.x, this.y + this.w / 2, this.x2, this.y2); // track
-    } else {
-      line(this.x, this.y + this.h / 2, this.x2, this.y2); // track
+      [tempW, tempH] = [tempH, tempW];
     }
+    line(this.x, this.y + tempH / 2, this.x2, this.y2); // track
   }
 
   update() {
@@ -296,9 +287,19 @@ class Slider {
     this.drawSliderHandle();
     this.determineValue();
 
+    if (frameCount < 2) {
+      this.setDefault();
+    }
+
     if (this.dragging) {
       print(this.sliderValue);
     }
+
+    if (this.orientation === 'vertical') {
+      this.x2 = this.x;
+      this.y2 = this.y + this.length + this.w / 2;
+    }
+
   }
 
   active() {
@@ -308,7 +309,6 @@ class Slider {
         this.offset = this.handleY - mouseY;
       } else {
         this.offset = this.handleX - mouseX;
-
       }
     }
   }

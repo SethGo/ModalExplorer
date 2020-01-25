@@ -64,12 +64,10 @@ function setup() {
   volKnob = new Knob(35, widthC - 70, heightC - 70, 0, 100, 50, 100);
 
   for (voice=0; voice < voicingKnobs.length; voice++) {
-    voiceVolSliders[voice] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * voice - 10, 7, 20, 50, 50, 'horizontal');
-    voiceVolSliders[voice].setOrientation();
+    voiceVolSliders[voice] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * voice - 10, 10, 20, 50, 25, 'horizontal');
   }
 
-  sliderv = new Slider(650, 500, 7, 20, 100, 80, 'vertical');
-  sliderv.setOrientation();
+  sliderv = new Slider(650, 500, 10, 20, 100, 80, 'vertical');
 }
 
 function draw() {
@@ -99,7 +97,6 @@ function draw() {
   updateScaleNoteNames();
 
   sliderv.update();
-  //sliderr.sliderHover(mouseX, mouseY);
 }
 
 
@@ -120,8 +117,6 @@ function keyPressed() {
     //stopOscillators();
     //harmonicFunc = "Invalid key. Press 1-7";
   }
-
-
 }
 
 
@@ -138,7 +133,6 @@ function mousePressed() {
       radioBoxColumns[column][accidental].clicked(mouseX, mouseY, column, accidental);
     }
   }
-
   sliderv.active();
 }
 
@@ -150,22 +144,17 @@ function mouseReleased() {
     oscKnobs[knob].inactive();
     voiceVolSliders[knob].inactive();
   }
-
   sliderv.inactive();
-
 }
 
 function updateChord() {
   for (knob = 0; knob < voicingKnobs.length; knob++) {
     let val = voicingKnobs[knob].knobValue;
-    if (val > 0) {
-      voicingKernel[knob] = voicingKnobs[knob].knobValue; // -1 because 0 position is note off
-    } else {
+    if (val < 1) {
       voicingKernel[knob] = ''; // note off
-    }
-    voicingKernel[knob] = voicingKnobs[knob].knobValue - 1;
+    } 
+    voicingKernel[knob] = val - 1;
   }
-  //voicingKernel = voicingKernel;//.reverse();
 
   // Set voicing functions and named notes based on the voicing-kernel
   for (voice = 0; voice < voicingKernel.length; voice++) {
@@ -177,19 +166,10 @@ function updateChord() {
     chordNotesNamed[voice] = scaleNotes[chord[voice]];
   }
 
-  // print('voicing Kernel: ' + voicingKernel);
-  // print('chord: ' + chord);
-  // print('chordNotesNamed: ' + chordNotesNamed);
 
-  // // Set chord note names to voicingNotes
-  // for (i = 0; i < voicingKernel.length; i++) {
-  //   voicingNotes[i] = scaleNotes[voicing[i]];
-  // }
-  //put this into a loop
+  //put this into a loop to set freqs (from ver1) 
   // oscB.freq(freqsOctave1[noteNames.indexOf(voicingNotes[0])]);
 }
-
-
 
 function getAccidental(position) {
   if (alterationArr[position] === 1) {
@@ -206,7 +186,6 @@ function updateScaleNoteNames() {
     scaleNotes[i] = noteNames[(scaleKernelAfterAlteration[i] + keyKnobVal) % 12];
   }
 }
-
 
 function drawText() {
   textAlign(LEFT);
@@ -226,8 +205,6 @@ function drawText() {
     text(scaleNotes[i], nonTonicRadiosX + 10 + horizSpacingFactor * (i - 1), nonTonicRadiosY + 115);
   }
 
-
-
   for (knob = 0; knob < voicingKnobs.length; knob++) { // display voicing function and osc selection
     let rawOscVal = oscKnobs[knob].knobValue;
     let rawVoicingVal = voicingKnobs[knob].knobValue;
@@ -241,18 +218,12 @@ function drawText() {
       note = '';
     }
 
-    // if(typeof(voicingVal) === null || voicingVal === undefined || voicingVal === ""){
-    //   console.log(voicingVal, 'LOLLLLL');
-    // }
-
     text(note, voicingKnobX + 50, voicingKnobY + voicingVertSpaceFactor * knob)
     text(voicingVal, voicingKnobX - 60, voicingKnobY + voicingVertSpaceFactor * knob);
     text(oscVal, voicingKnobX + 160, voicingKnobY + voicingVertSpaceFactor * knob);
   }
 
   text('Output', widthC - 70, heightC - 115)
-
-
 }
 
 function interpretVoicingVal(voicingKnobValue) {
@@ -260,31 +231,31 @@ function interpretVoicingVal(voicingKnobValue) {
 
   switch (floor(voicingKnobValue)) {
     case 0:
-      displayText = '-'
+      displayText = '-';
       break;
     case 1:
-      displayText = 'root'
+      displayText = 'root';
       break;
     case 2:
-      displayText = '2nd'
+      displayText = '2nd';
       break;
     case 3:
-      displayText = '3rd'
+      displayText = '3rd';
       break;
     case 4:
-      displayText = '4th'
+      displayText = '4th';
       break;
     case 5:
-      displayText = '5th'
+      displayText = '5th';
       break;
     case 6:
-      displayText = '6th'
+      displayText = '6th';
       break;
     case 7:
-      displayText = '7th'
+      displayText = '7th';
       break;
     default:
-      displayText = 'Loading'
+      displayText = 'Loading';
   }
   return displayText;
 }
@@ -293,19 +264,19 @@ function interpretOscVal(oscKnobValue) {
   let result;
   switch (oscKnobValue) {
     case 0:
-      result = 'sine'
+      result = 'sine';
       break;
     case 1:
-      result = 'triangle'
+      result = 'triangle';
       break;
     case 2:
-      result = 'square'
+      result = 'square';
       break;
     case 3:
-      result = 'sawtooth'
+      result = 'sawtooth';
       break;
     default:
-      displayText = 'Loading'
+      displayText = 'Loading';
   }
   return result;
 }
