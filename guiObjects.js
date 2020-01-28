@@ -72,8 +72,9 @@ class Knob {
       if (this.mouseOver && !this.isClickedOn) {
         cursor('pointer'); /// THIS WORKS???
         this.stroke = 100;
-      }
-      else {
+      } else if (this.isClickedOn) {
+        cursor('grab')
+      } else {
         this.stroke = 0;
       }
     }
@@ -139,8 +140,7 @@ class RadioBox {
     }
 
     if (inRadioXRange && inRadioYRange && !this.selected) {
-      cursor('pointer'); /// DOESN"T WORK????
-      print('hover');
+      cursor('pointer'); /// DOESN"T WORK???? (only works for very last box)
     }
   }
 
@@ -173,17 +173,17 @@ class RadioBox {
 }
 
 class Slider {
-  constructor(x, y, w, h, length, defaultVal, orientation) {
+  constructor(x, y, sliderW, sliderH, length, defaultVal, orientation) {
     this.x = x;
     this.y = y;
-    this.w = w;
-    this.h = h;
+    this.sliderW = sliderW;
+    this.sliderH = sliderH;
     this.length = length;
     this.defaultVal = defaultVal
     this.orientation = orientation; // 'horizontal' or 'vertical', (else statments throughout the class will go to horizontal)
 
     this.x2 = x + length;
-    this.y2 = y + h / 2;
+    this.y2 = y + sliderH / 2;
     this.handleX = x;
     this.handleY = y;
     this.dragging = false;
@@ -193,10 +193,9 @@ class Slider {
     this.sliderValue = defaultVal;
   }
 
-
   setDefault() {
     if (this.orientation === 'vertical') { 
-      this.handleY = floor(map(this.defaultVal, this.y + this.length, this.y, 0, 100));
+      this.handleY = floor(map(this.defaultVal, 0, 100, this.y + this.length, this.y));
     } else {
       this.handleX = floor(map(this.defaultVal, 0, 100, this.x, this.x + this.length));
     }
@@ -212,15 +211,15 @@ class Slider {
 
   determineHover() {
     let upperEdge = this.handleY;
-    let lowerEdge = this.handleY + this.h;
-    let rightEdge = this.handleX - this.w / 2;
-    let leftEdge = this.handleX + this.w;
+    let lowerEdge = this.handleY + this.sliderH;
+    let rightEdge = this.handleX - this.sliderW / 2;
+    let leftEdge = this.handleX + this.sliderW;
 
     if (this.orientation === 'vertical') {
       upperEdge = this.handleY;
-      lowerEdge = this.handleY + this.h / 2;
-      rightEdge = this.handleX - this.h / 2;
-      leftEdge = this.handleX + this.h / 2;
+      lowerEdge = this.handleY + this.sliderH / 2;
+      rightEdge = this.handleX - this.sliderH / 2;
+      leftEdge = this.handleX + this.sliderH / 2;
     }
 
     if (mouseX > rightEdge && mouseX < leftEdge && mouseY > upperEdge && mouseY < lowerEdge) {
@@ -245,8 +244,7 @@ class Slider {
         this.handleX = mouseX + this.offset;
         if (this.handleX >= this.x + this.length) {
           this.handleX = this.x + this.length;
-        }
-        if (this.handleX < this.x) {
+        } else if (this.handleX < this.x) {
           this.handleX = this.x;
         }
       }
@@ -261,8 +259,8 @@ class Slider {
     stroke(this.stroke);
     rectMode(CENTER);
 
-    let tempW = this.w;
-    let tempH = this.h;
+    let tempW = this.sliderW;
+    let tempH = this.sliderH;
     if (this.orientation === 'vertical') {
       [tempW, tempH] = [tempH, tempW];
     }
@@ -273,8 +271,8 @@ class Slider {
   }
 
   drawTrack() {
-    let tempW = this.w;
-    let tempH = this.h;
+    let tempW = this.sliderW;
+    let tempH = this.sliderH;
     if (this.orientation === 'vertical') {
       [tempW, tempH] = [tempH, tempW];
     }
@@ -287,19 +285,25 @@ class Slider {
     this.drawSliderHandle();
     this.determineValue();
 
-    if (frameCount < 2) {
+    if (frameCount < 20) {
       this.setDefault();
     }
 
-    if (this.dragging) {
-      print(this.sliderValue);
-    }
+    // if (this.dragging) {     // for testing...
+    //   print(this.sliderValue);
+    // }
 
     if (this.orientation === 'vertical') {
       this.x2 = this.x;
-      this.y2 = this.y + this.length + this.w / 2;
+      this.y2 = this.y + this.length + this.sliderW / 2;
     }
 
+    // Good logic for this one item but conflicts with other cursor calls. Maybe 
+    if (this.hover && !this.dragging) {
+      cursor('pointer');
+    } else if (this.dragging) {
+      cursor('grab');
+    }
   }
 
   active() {
@@ -316,5 +320,5 @@ class Slider {
   inactive() {
     this.dragging = false;
   }
-
 }
+

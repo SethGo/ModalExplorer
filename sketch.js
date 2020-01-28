@@ -11,6 +11,11 @@ var nonTonicRadiosY = 100;
 var voicingKnobX = 143;
 var voicingKnobY = 300;
 var voicingVertSpaceFactor = 70;
+var filterADSRx = 480;
+var filterADSRy = 280;
+var volKnobX = filterADSRx + 187;
+var ampADSRx = filterADSRx + 150;
+var ADSRhorizSpacing = 25;
 
 // gui objects
 var radioBoxColumns = [];
@@ -18,6 +23,8 @@ var voicingKnobs = [];
 var oscKnobs = [];
 var volKnob;
 var voiceVolSliders = [];
+var filterADSR = [];
+var ampADSR = [];
 
 // program control variables
 var alterationArr;
@@ -29,9 +36,12 @@ var chord = [];
 var chordNotesNamed = []
 var pressed;
 
-// notes and freqs
+// data
 var noteNames = ["A", "A#/Bb", "B", "C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab"];
-
+let freqsOctave1 = [110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65];
+let freqsOctave2 = [220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30];
+let freqsOctave3 = [440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61];
+let freqsOctave4 = [880.00, 932.33, 987.77, 1046.50, 1108.73, 1174.66, 1244.51, 1318.51, 1396.91, 1479.98, 1567.98, 1661.22];
 
 
 function setup() {
@@ -61,13 +71,17 @@ function setup() {
     oscKnobs[i] = new Knob(15, voicingKnobX + 110, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, 1, 4);
   }
 
-  volKnob = new Knob(35, widthC - 70, heightC - 70, 0, 100, 50, 100);
+  volKnob = new Knob(35, volKnobX, filterADSRy + 190, 0, 100, 50, 100);
 
   for (voice=0; voice < voicingKnobs.length; voice++) {
-    voiceVolSliders[voice] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * voice - 10, 10, 20, 50, 25, 'horizontal');
+    voiceVolSliders[voice] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * voice - 10, 10, 20, 70, 75, 'horizontal');
   }
 
-  sliderv = new Slider(650, 500, 10, 20, 100, 80, 'vertical');
+  for (i = 0; i < 4; i++) {
+    filterADSR[i] = new Slider(filterADSRx + i*ADSRhorizSpacing, filterADSRy, 10, 20, 100, 50, 'vertical');
+    ampADSR[i] = new Slider(ampADSRx + i*ADSRhorizSpacing, filterADSRy, 10, 20, 100, 40, 'vertical');
+  }
+
 }
 
 function draw() {
@@ -91,12 +105,12 @@ function draw() {
     voicingKnobs[knob].update();
     oscKnobs[knob].update();
     voiceVolSliders[knob].update();
+    filterADSR[knob].update();
+    ampADSR[knob].update();
   }
 
   updateChord();
   updateScaleNoteNames();
-
-  sliderv.update();
 }
 
 
@@ -127,13 +141,14 @@ function mousePressed() {
     voicingKnobs[knob].active();
     oscKnobs[knob].active();
     voiceVolSliders[knob].active();
+    filterADSR[knob].active();
+    ampADSR[knob].active();
   }
   for (column = 1; column < radioBoxColumns.length; column++) {
     for (accidental = 0; accidental < 3; accidental++) {
       radioBoxColumns[column][accidental].clicked(mouseX, mouseY, column, accidental);
     }
   }
-  sliderv.active();
 }
 
 function mouseReleased() {
@@ -143,8 +158,9 @@ function mouseReleased() {
     voicingKnobs[knob].inactive();
     oscKnobs[knob].inactive();
     voiceVolSliders[knob].inactive();
+    filterADSR[knob].inactive();
+    ampADSR[knob].inactive();
   }
-  sliderv.inactive();
 }
 
 function updateChord() {
@@ -196,8 +212,8 @@ function drawText() {
   textAlign(CENTER);
   textSize(15);
   rotate(radians(270));
-  text("- Scale -", -90, 50);
-  text("- Voicing -", -240, 50);
+  text("- Scale -", -130, 40);
+  text("- Voicing -", -390, 40);
   rotate(radians(90));
 
   for (i = 0; i < 7; i++) { // display function alterations and scale notes
@@ -223,7 +239,7 @@ function drawText() {
     text(oscVal, voicingKnobX + 160, voicingKnobY + voicingVertSpaceFactor * knob);
   }
 
-  text('Output', widthC - 70, heightC - 115)
+  text('Output', volKnobX, filterADSRy + 245)
 }
 
 function interpretVoicingVal(voicingKnobValue) {
