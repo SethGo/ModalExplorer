@@ -289,9 +289,9 @@ class Slider {
       this.setDefault();
     }
 
-    if (this.dragging) {     // for testing...
-      print(this.sliderValue);
-    }
+    // if (this.dragging) {     // for testing...
+    //   print(this.sliderValue);
+    // }
 
     if (this.orientation === 'vertical') {
       this.x2 = this.x;
@@ -341,8 +341,6 @@ class XyController {
     this.controllerXValue = defaultX;
     this.controllerYValue = defaultY;
   }
-
-
 
   determineValue() {
     let edge = this.dotSize / 4;
@@ -412,22 +410,10 @@ class XyController {
     this.drawBox();
     this.drawDot();
     this.determineValue();
- 
-
-    // if (frameCount < 2) {
-    //   this.dotX = this.dotX + this.offsetX;
-    //   this.dotY = this.dotY + this.offsetY;
-    // }
 
     if (this.dragging) {     // for testing...
       print(this.controllerXValue, this.controllerYValue);
     }
-
-    // if (this.orientation === 'vertical') {
-    //   this.x2 = this.x;
-    //   this.y2 = this.y + this.length + this.w / 2;
-    // }
-
 
     if (this.dotHover && !this.dragging) {
       cursor('pointer');
