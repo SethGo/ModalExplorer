@@ -1,6 +1,6 @@
 // spacing and positioning
 var widthC = 800;
-var heightC = 650;
+var heightC = 565;
 
 var radioSize = 20;
 var horizSpacingFactor = 70; // space between each function's column
@@ -14,8 +14,11 @@ var voicingVertSpaceFactor = 70;
 var filterADSRx = 480;
 var filterADSRy = 280;
 var volKnobX = filterADSRx + 187;
+var volKnobY = filterADSRy + 195;
 var ampADSRx = filterADSRx + 150;
-var ADSRhorizSpacing = 25;
+var ADSRhorizSpacing = 28;
+var xyControllerX = filterADSRx;
+var xyControllerY = filterADSRy + 150;
 
 // gui objects
 var radioBoxColumns = [];
@@ -27,10 +30,10 @@ var filterADSR = [];
 var ampADSR = [];
 
 // program control variables
-var alterationArr;
-var scaleKernelAfterAlteration;
+var alterationArr = [0, 0, 0, 0, 0, 0, 0];
+var scaleKernelAfterAlteration = [0, 2, 4, 5, 7, 9, 11];
 var scaleNotes = [];
-var keyKnobVal;
+var keyKnobVal = 3;
 var voicingKernel = [];
 var chord = [];
 var chordNotesNamed = []
@@ -42,6 +45,8 @@ let freqsOctave1 = [110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.
 let freqsOctave2 = [220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30];
 let freqsOctave3 = [440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61];
 let freqsOctave4 = [880.00, 932.33, 987.77, 1046.50, 1108.73, 1174.66, 1244.51, 1318.51, 1396.91, 1479.98, 1567.98, 1661.22];
+let intitialValuesFilterASDR = [50, 35, 60, 40];
+let intitialValuesAmpASDR = [30, 25, 70, 20];
 
 
 function setup() {
@@ -51,17 +56,15 @@ function setup() {
     for (accidental = 0; accidental < 3; accidental++) {
       accidentalColumn[accidental] = new RadioBox(nonTonicRadiosX, nonTonicRadiosY, degree, accidental);
       accidentalColumn[accidental].stroke = 0;
-      accidentalColumn[accidental].alpha = 50;
+      accidentalColumn[accidental].alpha = 80;
       if (accidental === 1) { // initialize natural radio boxes
-        accidentalColumn[accidental].alpha = 100;
+        accidentalColumn[accidental].alpha = 220;
         accidentalColumn[accidental].selected = true;
       }
     }
     radioBoxColumns[degree] = accidentalColumn;
   }
-  keyKnobVal = 3;
-  alterationArr = [0, 0, 0, 0, 0, 0, 0];
-  scaleKernelAfterAlteration = [0, 2, 4, 5, 7, 9, 11];
+
   updateScaleNoteNames();
 
   keyKnob = new Knob(20, nonTonicRadiosX - 60, nonTonicRadiosY + 50, 0, 11, 3, 12);
@@ -69,19 +72,13 @@ function setup() {
   for (i = 0; i < 4; i++) {
     voicingKnobs[i] = new Knob(28, voicingKnobX, voicingKnobY + voicingVertSpaceFactor * i, 0, 7, 7 - i * 2, 8);
     oscKnobs[i] = new Knob(15, voicingKnobX + 110, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, 1, 4);
+    voiceVolSliders[i] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * i - 10, 10, 20, 70, 75, 'horizontal');
+    filterADSR[i] = new Slider(filterADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesFilterASDR[i], 'vertical');
+    ampADSR[i] = new Slider(ampADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesAmpASDR[i], 'vertical');
   }
 
-  volKnob = new Knob(35, volKnobX, filterADSRy + 190, 0, 100, 50, 100);
-
-  for (voice=0; voice < voicingKnobs.length; voice++) {
-    voiceVolSliders[voice] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * voice - 10, 10, 20, 70, 75, 'horizontal');
-  }
-
-  for (i = 0; i < 4; i++) {
-    filterADSR[i] = new Slider(filterADSRx + i*ADSRhorizSpacing, filterADSRy, 10, 20, 100, 50, 'vertical');
-    ampADSR[i] = new Slider(ampADSRx + i*ADSRhorizSpacing, filterADSRy, 10, 20, 100, 40, 'vertical');
-  }
-
+  volKnob = new Knob(35, volKnobX, volKnobY, 0, 100, 75, 100);
+  xyController = new XyController(xyControllerX, xyControllerY, 90, 50, 50);
 }
 
 function draw() {
@@ -90,10 +87,10 @@ function draw() {
     for (column = 1; column < radioBoxColumns.length; column++) {
       for (accidental = 0; accidental < 3; accidental++) {
         radioBoxColumns[column][accidental].show();
-        radioBoxColumns[column][accidental].hover(mouseX, mouseY);
       }
     }
   }
+  
   drawText();
 
   keyKnob.update()
@@ -108,6 +105,8 @@ function draw() {
     filterADSR[knob].update();
     ampADSR[knob].update();
   }
+
+  xyController.update();
 
   updateChord();
   updateScaleNoteNames();
@@ -149,6 +148,7 @@ function mousePressed() {
       radioBoxColumns[column][accidental].clicked(mouseX, mouseY, column, accidental);
     }
   }
+  xyController.active();
 }
 
 function mouseReleased() {
@@ -161,6 +161,7 @@ function mouseReleased() {
     filterADSR[knob].inactive();
     ampADSR[knob].inactive();
   }
+  xyController.inactive();
 }
 
 function updateChord() {
@@ -168,7 +169,7 @@ function updateChord() {
     let val = voicingKnobs[knob].knobValue;
     if (val < 1) {
       voicingKernel[knob] = ''; // note off
-    } 
+    }
     voicingKernel[knob] = val - 1;
   }
 
@@ -211,9 +212,10 @@ function drawText() {
 
   textAlign(CENTER);
   textSize(15);
-  rotate(radians(270));
-  text("- Scale -", -130, 40);
+  rotate(radians(270)); // all sideways text
+  text("- Scale -", -150, 40);
   text("- Voicing -", -390, 40);
+  text("resonance", -475, 470);
   rotate(radians(90));
 
   for (i = 0; i < 7; i++) { // display function alterations and scale notes
@@ -239,7 +241,18 @@ function drawText() {
     text(oscVal, voicingKnobX + 160, voicingKnobY + voicingVertSpaceFactor * knob);
   }
 
-  text('Output', volKnobX, filterADSRy + 245)
+  adsrLables = ['A', 'D', 'S', 'R']
+  for (slider = 0; slider < ampADSR.length; slider++) {
+    text(adsrLables[slider], filterADSRx + slider * ADSRhorizSpacing, filterADSRy + 100)
+    text(adsrLables[slider], ampADSRx + slider * ADSRhorizSpacing, filterADSRy + 100)
+  }
+  textAlign(RIGHT);
+  text('filter', filterADSRx + 2*ADSRhorizSpacing, filterADSRy - 10);
+  text('cutoff', xyControllerX + 63, xyControllerY - 10);
+  text('amp', ampADSRx + 2*ADSRhorizSpacing, filterADSRy - 10);
+
+  textAlign(CENTER);
+  text('output', volKnobX, xyControllerY - 10)
 }
 
 function interpretVoicingVal(voicingKnobValue) {

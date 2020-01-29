@@ -110,12 +110,27 @@ class RadioBox {
     this.selected;
   }
 
+  hover(x, y) {
+    var inRadioXRange = x > this.x && x < this.x + radioSize;
+    var inRadioYRange = y > this.y && y < this.y + radioSize;
+
+    if (inRadioXRange && inRadioYRange && !this.selected) {
+      this.stroke = 150;
+      cursor('pointer'); /// DOESN"T WORK???? (only works for very last box)
+    } else {
+      this.stroke = 0;
+      cursor(ARROW);
+    }
+
+  }
+
   show() {
     fill(220, 0, 220, this.alpha);
     stroke(this.stroke);
     strokeWeight(2);
     rect(this.x, this.y, radioSize, radioSize, 4);
     stroke(0);
+    this.hover(mouseX, mouseY);
   }
 
   updateScale() {
@@ -127,34 +142,19 @@ class RadioBox {
     }
   }
 
-  hover(x, y) {
-    var inRadioXRange = x > this.x && x < this.x + radioSize;
-    var inRadioYRange = y > this.y && y < this.y + radioSize;
 
-    if (inRadioXRange && inRadioYRange && !this.selected) {
-      this.stroke = 95;
-
-    } else {
-      this.stroke = 0;
-      cursor(ARROW);
-    }
-
-    if (inRadioXRange && inRadioYRange && !this.selected) {
-      cursor('pointer'); /// DOESN"T WORK???? (only works for very last box)
-    }
-  }
 
   clicked(x, y, column, selectedAccidental) {
     var inRadioXRange = x > this.x && x < this.x + radioSize;
     var inRadioYRange = y > this.y && y < this.y + radioSize;
 
     if (inRadioXRange && inRadioYRange) {
-      this.alpha = 100;
+      this.alpha = 220;
       this.selected = true;
 
       for (accidental = 0; accidental < radioBoxColumns[column].length; accidental++) {
         if (accidental !== selectedAccidental) {
-          radioBoxColumns[column][accidental].alpha = 50; // deselect other radio boxes in the same column
+          radioBoxColumns[column][accidental].alpha = 80; // deselect other radio boxes in the same column
           radioBoxColumns[column][accidental].selected = false;
         }
       }
@@ -194,7 +194,7 @@ class Slider {
   }
 
   setDefault() {
-    if (this.orientation === 'vertical') { 
+    if (this.orientation === 'vertical') {
       this.handleY = floor(map(this.defaultVal, 0, 100, this.y + this.length, this.y));
     } else {
       this.handleX = floor(map(this.defaultVal, 0, 100, this.x, this.x + this.length));
@@ -289,16 +289,15 @@ class Slider {
       this.setDefault();
     }
 
-    // if (this.dragging) {     // for testing...
-    //   print(this.sliderValue);
-    // }
+    if (this.dragging) {     // for testing...
+      print(this.sliderValue);
+    }
 
     if (this.orientation === 'vertical') {
       this.x2 = this.x;
       this.y2 = this.y + this.length + this.sliderW / 2;
     }
 
-    // Good logic for this one item but conflicts with other cursor calls. Maybe 
     if (this.hover && !this.dragging) {
       cursor('pointer');
     } else if (this.dragging) {
@@ -322,3 +321,130 @@ class Slider {
   }
 }
 
+class XyController {
+  constructor(x, y, size, defaultX, defaultY) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.defaultX = defaultX;
+    this.defaultY = defaultY
+
+    this.dotSize = 20;
+    this.dotX = floor(map(defaultX, 0, 100, x, x + size));
+    this.dotY = floor(map(defaultY, 0, 100, y, y + size));
+    this.dragging = false;
+    this.boxHover = false;
+    this.dotHover = false;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.stroke;
+    this.controllerXValue = defaultX;
+    this.controllerYValue = defaultY;
+  }
+
+
+
+  determineValue() {
+    let edge = this.dotSize / 4;
+    this.controllerXValue = floor(map(this.dotX, this.x + this.size - edge, this.x + edge, 100, 0));
+    this.controllerYValue = floor(map(this.dotY, this.y + this.size - edge, this.y + edge, 0, 100));
+  }
+
+  determineHover() {
+    if (mouseX > this.x && mouseX < this.x + this.size && mouseY > this.y && mouseY < this.y + this.size) {
+      this.boxHover = true;
+    } else {
+      this.boxHover = false;
+    }
+
+    let d = dist(this.dotX, this.dotY, mouseX, mouseY);
+    if (d < this.dotSize / 2) {
+      this.dotHover = true;
+    } else {
+      this.dotHover = false;
+    }
+  }
+
+  drawBox() {
+    strokeWeight(3);
+    fill(80);
+    rect(this.x, this.y, this.size, this.size, 10);
+
+    for (i = 0; i < 10; i++) {
+      let spacingFactor = i * this.size / 10 + (this.size / 10) / 2;
+      strokeWeight(.5);
+      stroke(110);
+      line(this.x + spacingFactor, this.y + 3, this.x + spacingFactor, this.y + this.size - 3);
+      line(this.x + 3, this.y + spacingFactor, this.x + this.size - 3, this.y + spacingFactor);
+    }
+  }
+
+  drawDot() {
+    let blueVal = 255;
+    if (this.dragging) {
+      blueVal = 10;
+      this.dotX = mouseX + this.offsetX;
+      this.dotY = mouseY + this.offsetY;
+
+      let edge = this.dotSize / 4;
+      if (this.dotX >= this.x + this.size - edge) { // handle x extreemes
+        this.dotX = this.x + this.size - edge;
+      } else if (this.dotX <= this.x + edge) {
+        this.dotX = this.x + edge;
+      } 
+      
+      if (this.dotY >= this.y + this.size - edge) { // handle y extreemes
+        this.dotY = this.y + this.size - edge;
+      } else if (this.dotY <= this.y + edge) {
+        this.dotY = this.y + edge;
+      }
+    }
+
+    stroke(0);
+    fill(50, 150, blueVal);
+    ellipse(this.dotX, this.dotY, this.dotSize);
+    ellipse(this.dotX, this.dotY, this.dotSize / 2); // inner circle
+  }
+
+  
+  update() {
+    this.determineHover();
+    this.drawBox();
+    this.drawDot();
+    this.determineValue();
+ 
+
+    // if (frameCount < 2) {
+    //   this.dotX = this.dotX + this.offsetX;
+    //   this.dotY = this.dotY + this.offsetY;
+    // }
+
+    if (this.dragging) {     // for testing...
+      print(this.controllerXValue, this.controllerYValue);
+    }
+
+    // if (this.orientation === 'vertical') {
+    //   this.x2 = this.x;
+    //   this.y2 = this.y + this.length + this.w / 2;
+    // }
+
+
+    if (this.dotHover && !this.dragging) {
+      cursor('pointer');
+    } else if (this.dragging) {
+      noCursor();
+    }
+  }
+
+  active() {
+    if (this.dotHover) {
+      this.dragging = true;
+      this.offsetX = this.dotX - mouseX;
+      this.offsetY = this.dotY - mouseY;
+    }
+  }
+
+  inactive() {
+    this.dragging = false;
+  }
+}
