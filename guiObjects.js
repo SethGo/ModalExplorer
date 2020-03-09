@@ -224,8 +224,7 @@ class Slider {
 
     if (mouseX > rightEdge && mouseX < leftEdge && mouseY > upperEdge && mouseY < lowerEdge) {
       this.hover = true;
-    }
-    else {
+    } else {
       this.hover = false;
     }
   }
@@ -330,10 +329,11 @@ class XyController {
     this.defaultY = defaultY
 
     this.dotSize = 20;
+    this.edge = this.dotSize / 3;
     this.dotX = floor(map(defaultX, 0, 100, x, x + size));
     this.dotY = floor(map(defaultY, 0, 100, y, y + size));
     this.dragging = false;
-    this.boxHover = false;
+    this.boxHover = false; // not currently using box hover. maybe don't need this
     this.dotHover = false;
     this.offsetX = 0;
     this.offsetY = 0;
@@ -343,9 +343,8 @@ class XyController {
   }
 
   determineValue() {
-    let edge = this.dotSize / 4;
-    this.controllerXValue = floor(map(this.dotX, this.x + this.size - edge, this.x + edge, 100, 0));
-    this.controllerYValue = floor(map(this.dotY, this.y + this.size - edge, this.y + edge, 0, 100));
+    this.controllerXValue = floor(map(this.dotX, this.x + this.size - this.edge, this.x + this.edge, 100, 0));
+    this.controllerYValue = floor(map(this.dotY, this.y + this.size - this.edge, this.y + this.edge, 0, 100));
   }
 
   determineHover() {
@@ -384,17 +383,16 @@ class XyController {
       this.dotX = mouseX + this.offsetX;
       this.dotY = mouseY + this.offsetY;
 
-      let edge = this.dotSize / 4;
-      if (this.dotX >= this.x + this.size - edge) { // handle x extreemes
-        this.dotX = this.x + this.size - edge;
-      } else if (this.dotX <= this.x + edge) {
-        this.dotX = this.x + edge;
-      } 
-      
-      if (this.dotY >= this.y + this.size - edge) { // handle y extreemes
-        this.dotY = this.y + this.size - edge;
-      } else if (this.dotY <= this.y + edge) {
-        this.dotY = this.y + edge;
+      if (this.dotX >= this.x + this.size - this.edge) { // handle x extreemes
+        this.dotX = this.x + this.size - this.edge;
+      } else if (this.dotX <= this.x + this.edge) {
+        this.dotX = this.x + this.edge;
+      }
+
+      if (this.dotY >= this.y + this.size - this.edge) { // handle y extreemes
+        this.dotY = this.y + this.size - this.edge;
+      } else if (this.dotY <= this.y + this.edge) {
+        this.dotY = this.y + this.edge;
       }
     }
 
@@ -404,7 +402,7 @@ class XyController {
     ellipse(this.dotX, this.dotY, this.dotSize / 2); // inner circle
   }
 
-  
+
   update() {
     this.determineHover();
     this.drawBox();

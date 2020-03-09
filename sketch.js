@@ -26,8 +26,8 @@ var voicingKnobs = [];
 var oscKnobs = [];
 var volKnob;
 var voiceVolSliders = [];
-var filterADSR = [];
-var ampADSR = [];
+var filterADSR = []; //change to filterADSRSliders ......
+var ampADSRSliders = [];
 
 // program control variables
 var alterationArr = [0, 0, 0, 0, 0, 0, 0];
@@ -38,15 +38,22 @@ var voicingKernel = [];
 var chord = [];
 var chordNotesNamed = []
 var pressed;
+var oscillators = [];
+var ampA, ampD, ampS, ampR;
+var ampADSRVars = [];
+var filterA, filterD, filterS, filterR;
+var glide = 0;
 
 // data
 var noteNames = ["A", "A#/Bb", "B", "C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab"];
-let freqsOctave1 = [110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65];
-let freqsOctave2 = [220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30];
-let freqsOctave3 = [440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61];
-let freqsOctave4 = [880.00, 932.33, 987.77, 1046.50, 1108.73, 1174.66, 1244.51, 1318.51, 1396.91, 1479.98, 1567.98, 1661.22];
-let intitialValuesFilterASDR = [50, 35, 60, 40];
-let intitialValuesAmpASDR = [30, 25, 70, 20];
+var basFreqs = [110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65];
+var tenFreqs = [220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30];
+var altFreqs = [440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61];
+var sopFreqs = [880.00, 932.33, 987.77, 1046.50, 1108.73, 1174.66, 1244.51, 1318.51, 1396.91, 1479.98, 1567.98, 1661.22];
+var freqOctaves = [sopFreqs, altFreqs, tenFreqs, basFreqs]
+var intitialValuesFilterASDR = [50, 35, 60, 40];
+var intitialValuesAmpASDR = [7, 22, 20, 45];
+var ampADSRRatios = [60, 80, 100, 60];
 
 
 function setup() {
@@ -74,11 +81,21 @@ function setup() {
     oscKnobs[i] = new Knob(15, voicingKnobX + 110, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, 1, 4);
     voiceVolSliders[i] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * i - 10, 10, 20, 70, 75, 'horizontal');
     filterADSR[i] = new Slider(filterADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesFilterASDR[i], 'vertical');
-    ampADSR[i] = new Slider(ampADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesAmpASDR[i], 'vertical');
+    ampADSRSliders[i] = new Slider(ampADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesAmpASDR[i], 'vertical');
+    oscillators[i] = new p5.Oscillator('triangle');
   }
 
   volKnob = new Knob(35, volKnobX, volKnobY, 0, 100, 75, 100);
   xyController = new XyController(xyControllerX, xyControllerY, 90, 50, 50);
+
+  ampEnv = new p5.Envelope();
+  ampEnv.setRange(1.0, 0.0);
+  
+
+  filterEnv = new p5.Envelope();
+  filterEnv.setRange(1.0, 0.0);
+
+
 }
 
 function draw() {
@@ -90,7 +107,7 @@ function draw() {
       }
     }
   }
-  
+
   drawText();
 
   keyKnob.update()
@@ -103,32 +120,61 @@ function draw() {
     oscKnobs[knob].update();
     voiceVolSliders[knob].update();
     filterADSR[knob].update();
-    ampADSR[knob].update();
+    ampADSRSliders[knob].update();
   }
 
   xyController.update();
 
+
+  
+
+  updateEnvs();
   updateChord();
   updateScaleNoteNames();
+  updateGlobalVolume();
 }
 
+function updateGlobalVolume() {
+  volMap = map(volKnob.knobValue, 0, 100, 0.01, 20);
+  amp = volMap / 100;
+  ampEnv.setRange(amp, 0.0);
+
+}
 
 function keyPressed() {
+  for (i = 0; i < oscillators.length; i++) {
+    oscillators[i].stop();
+  }
   //ampEnv.play();  /// figure out the amp and filter env and eventually uncomment this
   userKey = parseInt(String.fromCharCode(keyCode));
 
+
   if (userKey >= 1 && userKey < 8) { // Play chord function by number key
     pressed = userKey;
-    //startOscillators();
-    //harmonicFunc = "Harmonic Function: " + romanNums[pressed-1];
-    //initial = false;
 
-  } else if (keyCode == 32) { // Stop sound with space
-    //stopOscillators();
+    for (i = 0; i < oscillators.length; i++) {
+      if (voicingKnobs[i].knobValue !== 0) {
+        oscillators[i].start();
+        ampEnv.triggerAttack(oscillators[i]);
+      }
+    }
 
-  } else { // Handle bad input
-    //stopOscillators();
-    //harmonicFunc = "Invalid key. Press 1-7";
+
+  } else { // Stop sound with any other key
+    for (i = 0; i < oscillators.length; i++) {
+      oscillators[i].stop();
+    }
+
+
+  }
+
+
+}
+
+
+function keyReleased() {
+  for (i = 0; i < oscillators.length; i++) {
+      ampEnv.triggerRelease(oscillators[i]);
   }
 }
 
@@ -141,7 +187,7 @@ function mousePressed() {
     oscKnobs[knob].active();
     voiceVolSliders[knob].active();
     filterADSR[knob].active();
-    ampADSR[knob].active();
+    ampADSRSliders[knob].active();
   }
   for (column = 1; column < radioBoxColumns.length; column++) {
     for (accidental = 0; accidental < 3; accidental++) {
@@ -159,29 +205,48 @@ function mouseReleased() {
     oscKnobs[knob].inactive();
     voiceVolSliders[knob].inactive();
     filterADSR[knob].inactive();
-    ampADSR[knob].inactive();
+    ampADSRSliders[knob].inactive();
   }
   xyController.inactive();
 }
 
-function updateChord() {
-  for (knob = 0; knob < voicingKnobs.length; knob++) {
-    let val = voicingKnobs[knob].knobValue;
-    if (val < 1) {
-      voicingKernel[knob] = ''; // note off
-    }
-    voicingKernel[knob] = val - 1;
+function updateEnvs() {
+
+  for (i=0; i < ampADSRSliders.length; i++) {
+    ampADSRVars[i] = ampADSRSliders[i].sliderValue / ampADSRRatios[i];
   }
 
-  // Set voicing functions and named notes based on the voicing-kernel
-  for (voice = 0; voice < voicingKernel.length; voice++) {
-    if (voicingKernel[voice] < 0) { // if voice is turned off
-      chord[voice] = '';
+  ampEnv.setADSR(...ampADSRVars);
+
+  /////basicaly copy and adapt all this for the filter env next
+  // for (i=0; i < ampADSRSliders.length; i++) { 
+  //   ampADSRVars[i] = ampADSRSliders[i].sliderValue / ampADSRRatios[i];
+  // }
+  
+  // ampEnv.setADSR(...ampADSRVars);
+
+}
+
+function updateChord() {
+  for (i = 0; i < voicingKnobs.length; i++) {
+    voicingKernel[i] = voicingKnobs[i].knobValue - 1;
+
+    if (voicingKernel[i] < 0) { // if voice is turned off
+      chord[i] = '';
+      oscillators[i].stop();
     } else {
-      chord[voice] = (voicingKernel[voice] + (pressed - 1)) % 7;
+      chord[i] = (voicingKernel[i] + (pressed - 1)) % 7; // set chord
     }
-    chordNotesNamed[voice] = scaleNotes[chord[voice]];
+    chordNotesNamed[i] = scaleNotes[chord[i]];
   }
+
+  for (i = 0; i < oscillators.length; i++) {
+    oscillators[i].freq(freqOctaves[i][noteNames.indexOf(chordNotesNamed[i])], glide); // use note names from voicing array to get frequencies from freqOctaves array
+  } ////// add another slider for glide
+
+
+
+
 
 
   //put this into a loop to set freqs (from ver1) 
@@ -242,14 +307,14 @@ function drawText() {
   }
 
   adsrLables = ['A', 'D', 'S', 'R']
-  for (slider = 0; slider < ampADSR.length; slider++) {
+  for (slider = 0; slider < ampADSRSliders.length; slider++) {
     text(adsrLables[slider], filterADSRx + slider * ADSRhorizSpacing, filterADSRy + 100)
     text(adsrLables[slider], ampADSRx + slider * ADSRhorizSpacing, filterADSRy + 100)
   }
   textAlign(RIGHT);
-  text('filter', filterADSRx + 2*ADSRhorizSpacing, filterADSRy - 10);
+  text('filter', filterADSRx + 2 * ADSRhorizSpacing, filterADSRy - 10);
   text('cutoff', xyControllerX + 63, xyControllerY - 10);
-  text('amp', ampADSRx + 2*ADSRhorizSpacing, filterADSRy - 10);
+  text('amp', ampADSRx + 2 * ADSRhorizSpacing, filterADSRy - 10);
 
   textAlign(CENTER);
   text('output', volKnobX, xyControllerY - 10)
