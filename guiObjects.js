@@ -321,7 +321,7 @@ class Slider {
 }
 
 class XyController {
-  constructor(x, y, size, defaultX, defaultY) {
+  constructor(x, y, size, defaultX, defaultY) { 
     this.x = x;
     this.y = y;
     this.size = size;
@@ -338,13 +338,13 @@ class XyController {
     this.offsetX = 0;
     this.offsetY = 0;
     this.stroke;
-    this.controllerXValue = defaultX;
-    this.controllerYValue = defaultY;
+    this.controllerXValue = defaultX; // these default vals don't set right for some reason?
+    this.controllerYValue = defaultY; // these default vals don't set right for some reason?
   }
 
   determineValue() {
-    this.controllerXValue = floor(map(this.dotX, this.x + this.size - this.edge, this.x + this.edge, 100, 0));
-    this.controllerYValue = floor(map(this.dotY, this.y + this.size - this.edge, this.y + this.edge, 0, 100));
+    this.controllerXValue = round(map(this.dotX, this.x + this.size - this.edge, this.x + this.edge, 100, 0));
+    this.controllerYValue = round(map(this.dotY, this.y + this.size - this.edge, this.y + this.edge, 0, 100));
   }
 
   determineHover() {

@@ -43,6 +43,7 @@ var oscillators = [];;
 var ampADSRVars = [];
 var filterADSRVars = [];
 var filterEnv;
+var LpFilter;
 var ampEnv;
 var glide = 0;
 
@@ -53,8 +54,9 @@ var tenFreqs = [220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 
 var altFreqs = [440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61];
 var sopFreqs = [880.00, 932.33, 987.77, 1046.50, 1108.73, 1174.66, 1244.51, 1318.51, 1396.91, 1479.98, 1567.98, 1661.22];
 var freqOctaves = [sopFreqs, altFreqs, tenFreqs, basFreqs]
+var waveTypeArr = ['sine', 'triangle', 'square', 'sawtooth'];
 var intitialValuesFilterASDR = [10, 0, 60, 8];
-var intitialValuesAmpASDR = [7, 22, 20, 45];
+var intitialValuesAmpASDR = [7, 22, 20, 9];
 
 
 
@@ -74,31 +76,29 @@ function setup() {
     radioBoxColumns[degree] = accidentalColumn;
   }
 
-  updateScaleNoteNames();
+  
 
   keyKnob = new Knob(20, nonTonicRadiosX - 60, nonTonicRadiosY + 50, 0, 11, 3, 12);
 
   ampEnv = new p5.Envelope();
   filterEnv = new p5.Envelope();
   LpFilter = new p5.LowPass();
-  
-
-  
 
   for (i = 0; i < 4; i++) {
     voicingKnobs[i] = new Knob(28, voicingKnobX, voicingKnobY + voicingVertSpaceFactor * i, 0, 7, 7 - i * 2, 8);
-    oscKnobs[i] = new Knob(15, voicingKnobX + 110, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, 1, 4);
+    oscKnobs[i] = new Knob(15, voicingKnobX + 110, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, i, 4);
     voiceVolSliders[i] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * i - 10, 10, 20, 70, 75, 'horizontal');
     filterADSRSliders[i] = new Slider(filterADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesFilterASDR[i], 'vertical');
     ampADSRSliders[i] = new Slider(ampADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesAmpASDR[i], 'vertical');
-    oscillators[i] = new p5.Oscillator('triangle');
+    oscillators[i] = new p5.Oscillator(waveTypeArr[i]);
     oscillators[i].disconnect();
     oscillators[i].connect(LpFilter);
   }
 
   volKnob = new Knob(35, volKnobX, volKnobY, 0, 100, 50, 100);
-  xyController = new XyController(xyControllerX, xyControllerY, 90, 9, 63); // default vals don't set right for some reason?
+  xyController = new XyController(xyControllerX, xyControllerY, 90, 50, 50); 
 
+  updateScaleNoteNames();
 }
 
 function draw() {
@@ -130,11 +130,22 @@ function draw() {
 
 
   
-
+  updateWaveType();
+  updateVoiceGains(); //???
   updateEnvs();
   updateChord();
   updateScaleNoteNames();
   updateGlobalVolume();
+}
+
+function updateVoiceGains() {
+//???
+}
+
+function updateWaveType() {
+  for (i = 0; i < oscillators.length; i++) {
+    oscillators[i].setType(waveTypeArr[oscKnobs[i].knobValue])
+  }
 }
 
 function updateGlobalVolume() {
@@ -236,15 +247,6 @@ function updateEnvs() {
   for (i=0; i < oscillators.length; i++) {
     oscillators[i].amp(ampEnv);
   }
-
-  
-  /////basicaly copy and adapt all this for the filter env next
-  // for (i=0; i < ampADSRSliders.length; i++) { 
-  //   ampADSRVars[i] = ampADSRSliders[i].sliderValue / ampADSRRatios[i];
-  // }
-  
-  // ampEnv.setADSR(...ampADSRVars);
-
 }
 
 function updateChord() {
