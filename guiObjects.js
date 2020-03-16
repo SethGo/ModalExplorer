@@ -409,9 +409,9 @@ class XyController {
     this.drawDot();
     this.determineValue();
 
-    if (this.dragging) {     // for testing...
-      print(this.controllerXValue, this.controllerYValue);
-    }
+    // if (this.dragging) {     // for testing...
+    //   print(this.controllerXValue, this.controllerYValue);
+    // }
 
     if (this.dotHover && !this.dragging) {
       cursor('pointer');
