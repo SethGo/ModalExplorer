@@ -153,11 +153,11 @@ function updateFFTViz() {
   let waveform = fft.waveform();
   noFill();
   beginShape();
-  strokeWeight(4.5);
+  strokeWeight(4.8);
   stroke('orange');
   for (let i = 0; i < waveform.length; i++){
     let x = map(i, 0, waveform.length, 333, widthC - 20);
-    let y = map( waveform[i], -1, 1, -52.6, 117.3);
+    let y = map( waveform[i], -1, 1, -54.6, 119.3);
     vertex(x,y);
   }
   endShape();
@@ -180,11 +180,14 @@ function drawGUILines() {
   // box around scales
   rect(10, nonTonicRadiosY - radioSize - 2, widthC - 20, 150, radius);
 
+  // box around scale controls
+  rect(60, nonTonicRadiosY - radioSize - 2, widthC - 140, 150, radius);
+
   // box around 'scale' label
   rect(10, nonTonicRadiosY - radioSize - 2, 50, 150, radius);
 
   // box around glide section
-  rect(widthC - 80, nonTonicRadiosY - radioSize - 2, 70, 150, radius);
+  rect(widthC - 80, nonTonicRadiosY - radioSize + 30, 70, 118, radius);
 
   // box around 'glide' title
   rect(widthC - 80, nonTonicRadiosY - radioSize - 2, 70, 32, radius);
@@ -196,25 +199,25 @@ function drawGUILines() {
   rect(10, voicingKnobY - 82, 50, 330, radius);
 
   // box around voicingKnobs label
-  rect(60, voicingKnobY - 82, 100, 330, radius);
+  rect(60, voicingKnobY - 50, 100, 298, radius);
 
   // box around 'inversion' label
   rect(60, voicingKnobY - 82, 100, 32, radius);
 
   // box around chord section
-  rect(voicingKnobX + 50, voicingKnobY - 82, 100, 330, radius);
+  rect(voicingKnobX + 50, voicingKnobY - 50, 100, 298, radius);
 
   // box around 'chord' title
   rect(voicingKnobX + 50, voicingKnobY - 82, 100, 32, radius);
 
   // box around osc section
-  rect(voicingKnobX + 150, voicingKnobY - 82, 200, 330, radius);
+  rect(voicingKnobX + 150, voicingKnobY - 50, 200, 298, radius);
 
   // box around 'Oscillators' title
   rect(voicingKnobX + 150, voicingKnobY - 82, 200, 32, radius);
 
   // box around env section
-  rect(voicingKnobX + 350, voicingKnobY - 82, 330, 330, radius);
+  rect(voicingKnobX + 350, voicingKnobY - 50, 330, 298, radius);
 
   // box around 'Envelopes' title
   rect(voicingKnobX + 350, voicingKnobY - 82, 330, 32, radius);
