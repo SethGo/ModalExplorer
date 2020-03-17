@@ -3,7 +3,7 @@ var widthC = 800;
 var heightC = 565;
 
 var radioSize = 20;
-var horizSpacingFactor = 70; // space between each function's column
+var horizSpacingFactor = 90; // space between each function's column
 var vertSpacingFactor = 30; // space between boxes in same column
 var radioOffset = 10; // Vertical offset to make room for the number on top
 var nonTonicRadiosX = 200;
@@ -45,6 +45,7 @@ var filterADSRVars = [];
 var filterEnv;
 var LpFilter;
 var ampEnv;
+var ampEnvArr = [];
 var glide = 0;
 
 // data
@@ -65,7 +66,7 @@ function setup() {
   for (degree = 1; degree < 7; degree++) {
     let accidentalColumn = [];
     for (accidental = 0; accidental < 3; accidental++) {
-      accidentalColumn[accidental] = new RadioBox(nonTonicRadiosX, nonTonicRadiosY, degree, accidental);
+      accidentalColumn[accidental] = new RadioBox(nonTonicRadiosX + 20, nonTonicRadiosY, degree, accidental, 'orange');
       accidentalColumn[accidental].stroke = 0;
       accidentalColumn[accidental].alpha = 80;
       if (accidental === 1) { // initialize natural radio boxes
@@ -76,8 +77,6 @@ function setup() {
     radioBoxColumns[degree] = accidentalColumn;
   }
 
-  
-
   keyKnob = new Knob(20, nonTonicRadiosX - 60, nonTonicRadiosY + 50, 0, 11, 3, 12);
 
   ampEnv = new p5.Envelope();
@@ -86,24 +85,25 @@ function setup() {
   LpFilter = new p5.LowPass();
 
   for (i = 0; i < 4; i++) {
-    voicingKnobs[i] = new Knob(28, voicingKnobX, voicingKnobY + voicingVertSpaceFactor * i, 0, 7, 7 - i * 2, 8);
-    oscKnobs[i] = new Knob(15, voicingKnobX + 110, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, i, 4);
+    voicingKnobs[i] = new Knob(30, voicingKnobX, voicingKnobY + voicingVertSpaceFactor * i, 0, 7, 7 - i * 2, 8);
+    oscKnobs[i] = new Knob(22, voicingKnobX + 130, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, i, 4);
     voiceVolSliders[i] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * i - 10, 10, 20, 70, 75, 'horizontal');
     filterADSRSliders[i] = new Slider(filterADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesFilterASDR[i], 'vertical');
     ampADSRSliders[i] = new Slider(ampADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesAmpASDR[i], 'vertical');
     oscillators[i] = new p5.Oscillator(waveTypeArr[i]);
     oscillators[i].disconnect();
     oscillators[i].connect(LpFilter);
+    ampEnvArr[i] = new p5.Envelope();
   }
 
-  volKnob = new Knob(35, volKnobX, volKnobY, 0, 100, 50, 100);
-  xyController = new XyController(xyControllerX, xyControllerY, 90, 50, 50); 
+  volKnob = new Knob(39, volKnobX, volKnobY, 0, 100, 50, 100);
+  xyController = new XyController(xyControllerX, xyControllerY, 90, 50, 50);
 
   updateScaleNoteNames();
 }
 
 function draw() {
-  background(60);
+  background(75);
   if (radioBoxColumns) {
     for (column = 1; column < radioBoxColumns.length; column++) {
       for (accidental = 0; accidental < 3; accidental++) {
@@ -112,12 +112,11 @@ function draw() {
     }
   }
 
-  drawText();
+  
 
   keyKnob.update()
   keyKnobVal = floor(keyKnob.knobValue);
   volKnob.update();
-
 
   for (knob = 0; knob < voicingKnobs.length; knob++) {
     voicingKnobs[knob].update();
@@ -129,19 +128,15 @@ function draw() {
 
   xyController.update();
 
-
-  
   updateWaveType();
-  updateVoiceGains(); //???
   updateEnvs();
   updateChord();
   updateScaleNoteNames();
-  updateGlobalVolume();
+  updateVolumes();
+
+  drawText();
 }
 
-function updateVoiceGains() {
-//??? try setInput() an amp
-}
 
 function updateWaveType() {
   for (i = 0; i < oscillators.length; i++) {
@@ -149,10 +144,13 @@ function updateWaveType() {
   }
 }
 
-function updateGlobalVolume() {
-  volMap = map(volKnob.knobValue, 0, 100, 0.01, 20);
-  amp = volMap / 100;
-  ampEnv.setRange(amp, 0.0);
+function updateVolumes() {
+  let globalVol = volKnob.knobValue;
+  for (i = 0; i < oscillators.length; i++) {
+    let individualVolPct = voiceVolSliders[i].sliderValue / 100;
+    let volMap = map(globalVol*individualVolPct, 0, 100, 0.0001, .2);
+    ampEnvArr[i].setRange(volMap, 0.0);
+  }
 }
 
 function keyPressed() {
@@ -168,28 +166,23 @@ function keyPressed() {
     for (i = 0; i < oscillators.length; i++) {
       if (voicingKnobs[i].knobValue !== 0) {
         oscillators[i].start();
-        ampEnv.triggerAttack(oscillators[i]);
+        ampEnvArr[i].triggerAttack(oscillators[i]);
         filterEnv.triggerAttack();
       }
     }
-
 
   } else { // Stop sound with any other key
     for (i = 0; i < oscillators.length; i++) {
       oscillators[i].stop();
     }
-
-
   }
-
-
 }
 
 
 function keyReleased() {
   for (i = 0; i < oscillators.length; i++) {
-      ampEnv.triggerRelease(oscillators[i]);
-      filterEnv.triggerRelease();
+    ampEnvArr[i].triggerRelease(oscillators[i]);
+    filterEnv.triggerRelease();
   }
 }
 
@@ -228,25 +221,26 @@ function mouseReleased() {
 function updateEnvs() {
   let cutOff = map(xyController.controllerXValue, 0, 100, 200, 10000);
   let res = map(xyController.controllerYValue, 0, 100, 1, 25);
-  let ampADSRRatios = [60, 80, 100, 60];
-  let filterADSRRatios = [60, 80, 100, 60];
+  let ADSRRatios = [60, 80, 100, 60];
 
-  for (i=0; i < ampADSRSliders.length; i++) {
-    ampADSRVars[i] = ampADSRSliders[i].sliderValue / ampADSRRatios[i];
-    filterADSRVars[i] = filterADSRSliders[i].sliderValue / filterADSRRatios[i];
+  for (i = 0; i < ampADSRSliders.length; i++) {
+    ampADSRVars[i] = ampADSRSliders[i].sliderValue / ADSRRatios[i];
+    filterADSRVars[i] = filterADSRSliders[i].sliderValue / ADSRRatios[i];
   }
 
-
-  ampEnv.setADSR(...ampADSRVars);
+  for (i = 0; i < oscillators.length; i++) {
+    ampEnvArr[i].setADSR(...ampADSRVars);
+  }
+  
   filterEnv.setADSR(...filterADSRVars);
 
-  
+
   filterEnv.setRange(cutOff, 100);
   LpFilter.freq(filterEnv);
   LpFilter.res(res);
 
-  for (i=0; i < oscillators.length; i++) {
-    oscillators[i].amp(ampEnv);
+  for (i = 0; i < oscillators.length; i++) {
+    oscillators[i].amp(ampEnvArr[i]);
   }
 }
 
@@ -307,8 +301,8 @@ function drawText() {
   rotate(radians(90));
 
   for (i = 0; i < 7; i++) { // display function alterations and scale notes
-    text(getAccidental(i) + (i + 1), nonTonicRadiosX + 10 + horizSpacingFactor * (i - 1), nonTonicRadiosY);
-    text(scaleNotes[i], nonTonicRadiosX + 10 + horizSpacingFactor * (i - 1), nonTonicRadiosY + 115);
+    text(getAccidental(i) + (i + 1), nonTonicRadiosX + 30 + horizSpacingFactor * (i - 1), nonTonicRadiosY);
+    text(scaleNotes[i], nonTonicRadiosX + 30 + horizSpacingFactor * (i - 1), nonTonicRadiosY + 115);
   }
 
   for (knob = 0; knob < voicingKnobs.length; knob++) { // display voicing function and osc selection
@@ -324,13 +318,17 @@ function drawText() {
       note = '';
     }
 
-    text(note, voicingKnobX + 50, voicingKnobY + voicingVertSpaceFactor * knob)
-    text(voicingVal, voicingKnobX - 60, voicingKnobY + voicingVertSpaceFactor * knob);
-    text(oscVal, voicingKnobX + 160, voicingKnobY + voicingVertSpaceFactor * knob);
+    fill('orange');
+    text(note, voicingKnobX + 70, voicingKnobY + voicingVertSpaceFactor * knob);
+
+    fill('black');
+    text(voicingVal, voicingKnobX, voicingKnobY + 4 + voicingVertSpaceFactor * knob);
+    text(oscVal, voicingKnobX + 130, voicingKnobY + 4 + voicingVertSpaceFactor * knob);
   }
 
   adsrLables = ['A', 'D', 'S', 'R']
   for (slider = 0; slider < ampADSRSliders.length; slider++) {
+    fill('orange');
     text(adsrLables[slider], filterADSRx + slider * ADSRhorizSpacing, filterADSRy + 100)
     text(adsrLables[slider], ampADSRx + slider * ADSRhorizSpacing, filterADSRy + 100)
   }
@@ -381,16 +379,16 @@ function interpretOscVal(oscKnobValue) {
   let result;
   switch (oscKnobValue) {
     case 0:
-      result = 'sine';
+      result = 'sin';
       break;
     case 1:
-      result = 'triangle';
+      result = 'tri';
       break;
     case 2:
-      result = 'square';
+      result = 'sqr';
       break;
     case 3:
-      result = 'sawtooth';
+      result = 'saw';
       break;
     default:
       displayText = 'Loading';

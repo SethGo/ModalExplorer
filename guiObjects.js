@@ -61,9 +61,10 @@ class Knob {
       ellipseMode(RADIUS);
       strokeWeight(3);
       stroke(this.stroke);
+      fill('orange');
       rotate(radians(-50));
       ellipse(0, 0, this.radius, this.radius);
-      line(1 - this.radius, 0, 10 - this.radius, 0);
+      line(1 - this.radius, 0, 7 - this.radius, 0);
       pop(); // restore coordinate matrix
       rotate(0);
       textAlign(CENTER);
@@ -100,10 +101,12 @@ class Knob {
 
 
 class RadioBox {
-  constructor(x, y, scaleDeg, accidental) {
+  constructor(x, y, scaleDeg, accidental, color) {
     this.x = x + horizSpacingFactor * (scaleDeg - 1);
     this.y = y + radioOffset + vertSpacingFactor * accidental;
     this.scaleDeg = scaleDeg;
+    this.color = color;
+
     this.alpha;
     this.stroke;
     this.accidentalValue = 0;
@@ -116,7 +119,7 @@ class RadioBox {
 
     if (inRadioXRange && inRadioYRange && !this.selected) {
       this.stroke = 150;
-      cursor('pointer'); /// DOESN"T WORK???? (only works for very last box)
+      // cursor('pointer'); /// DOESN"T WORK???? (only works for very last box)
     } else {
       this.stroke = 0;
       cursor(ARROW);
@@ -125,7 +128,9 @@ class RadioBox {
   }
 
   show() {
-    fill(220, 0, 220, this.alpha);
+    let boxColor = color(this.color);
+    boxColor.setAlpha(this.alpha);
+    fill(boxColor);
     stroke(this.stroke);
     strokeWeight(2);
     rect(this.x, this.y, radioSize, radioSize, 4);
@@ -230,6 +235,7 @@ class Slider {
   }
 
   drawSliderHandle() {
+    fill('orange');
     if (this.dragging) {
       if (this.orientation === 'vertical') { // handle extreemes for vert
         this.handleY = mouseY + this.offset;
@@ -364,7 +370,7 @@ class XyController {
 
   drawBox() {
     strokeWeight(3);
-    fill(80);
+    fill(50);
     rect(this.x, this.y, this.size, this.size, 10);
 
     for (i = 0; i < 10; i++) {
@@ -377,9 +383,9 @@ class XyController {
   }
 
   drawDot() {
-    let blueVal = 255;
+    let alpha = 150;
     if (this.dragging) {
-      blueVal = 10;
+      alpha = 255;
       this.dotX = mouseX + this.offsetX;
       this.dotY = mouseY + this.offsetY;
 
@@ -397,8 +403,12 @@ class XyController {
     }
 
     stroke(0);
-    fill(50, 150, blueVal);
+    let dotColor = color('orange');
+    dotColor.setAlpha(alpha);
+    fill(dotColor);
     ellipse(this.dotX, this.dotY, this.dotSize);
+    dotColor.setAlpha(255);
+    fill(dotColor);
     ellipse(this.dotX, this.dotY, this.dotSize / 2); // inner circle
   }
 
