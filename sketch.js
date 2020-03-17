@@ -6,7 +6,7 @@ var radioSize = 20;
 var horizSpacingFactor = 90; // space between each function's column
 var vertSpacingFactor = 30; // space between boxes in same column
 var radioOffset = 10; // Vertical offset to make room for the number on top
-var nonTonicRadiosX = 210;
+var nonTonicRadiosX = 200;
 var nonTonicRadiosY = 100;
 var voicingKnobX = 110;
 var voicingKnobY = 310;
@@ -343,15 +343,19 @@ function updateScaleNoteNames() {
 
 function drawText() {
   textAlign(LEFT);
-  textSize(28);
+  textSize(45);
+  textStyle(ITALIC);
   fill('orange')
-  text("Modal Explorer", 25, 40);
+  text("Modal Explorer", 25, 55);
 
   textAlign(CENTER);
-  textSize(15);
+  textSize(16);
   rotate(radians(270)); // all sideways text from here to the next rotate() call
-  text("- Scale -", -150, 40);
-  text("- Voicing -", -390, 40);
+  textStyle(NORMAL);
+  text("SCALE", -150, 40);
+  text("VOICING", -390, 40);
+
+  textSize(12);
   text("resonance", -475, 500);
   rotate(radians(90)); // rotate back to 0 degrees for normal text
 
@@ -374,9 +378,11 @@ function drawText() {
     }
 
     fill('orange');
+    textSize(16);
     text(note, voicingKnobX + 100, voicingKnobY + voicingVertSpaceFactor * knob);
 
     fill('black');
+    textSize(12);
     text(voicingVal, voicingKnobX, voicingKnobY + 4 + voicingVertSpaceFactor * knob);
     text(oscVal, voicingKnobX + 200, voicingKnobY + 4 + voicingVertSpaceFactor * knob);
   }
@@ -393,11 +399,11 @@ function drawText() {
   text('amp', ampADSRx + 2 * ADSRhorizSpacing, filterADSRy - 10);
 
   textAlign(CENTER);
-  text('Glide', widthC - 45, nonTonicRadiosY);
-  text('Inversion', voicingKnobX, voicingKnobY - 60);
-  text('Chord', voicingKnobX + 100, voicingKnobY - 60);
-  text('Oscillators', voicingKnobX + 250, voicingKnobY - 60);
-  text('Envelopes', voicingKnobX + 515, voicingKnobY - 60);
+  text('GLIDE', widthC - 45, nonTonicRadiosY);
+  text('INVERSION', voicingKnobX, voicingKnobY - 60);
+  text('CHORD', voicingKnobX + 100, voicingKnobY - 60);
+  text('OSCILLATORS', voicingKnobX + 250, voicingKnobY - 60);
+  text('ENVELOPES', voicingKnobX + 515, voicingKnobY - 60);
   text('type', voicingKnobX + 200, filterADSRy - 10);
   text('mix', voicingKnobX + 285, filterADSRy - 10);
   text('output', volKnobX, xyControllerY - 10)
