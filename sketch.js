@@ -47,6 +47,7 @@ var LpFilter;
 var ampEnv;
 var ampEnvArr = [];
 var glide = 0;
+var fft;
 
 // data
 var noteNames = ["A", "A#/Bb", "B", "C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab"];
@@ -102,6 +103,8 @@ function setup() {
   xyController = new XyController(xyControllerX, xyControllerY, 90, 50, 50);
 
   updateScaleNoteNames();
+
+  fft = new p5.FFT();
 }
 
 function draw() {
@@ -142,6 +145,24 @@ function draw() {
 
   drawText();
   drawGUILines();
+
+  updateFFTViz();
+}
+
+function updateFFTViz() {
+  let waveform = fft.waveform();
+  noFill();
+  beginShape();
+  strokeWeight(4.5);
+  stroke('orange');
+  for (let i = 0; i < waveform.length; i++){
+    let x = map(i, 0, waveform.length, 333, widthC - 20);
+    let y = map( waveform[i], -1, 1, -52.6, 117.3);
+    vertex(x,y);
+  }
+  endShape();
+
+
 }
 
 function updateGlide() {
