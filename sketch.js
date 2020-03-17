@@ -82,6 +82,7 @@ function setup() {
 
   ampEnv = new p5.Envelope();
   filterEnv = new p5.Envelope();
+
   LpFilter = new p5.LowPass();
 
   for (i = 0; i < 4; i++) {
@@ -102,7 +103,7 @@ function setup() {
 }
 
 function draw() {
-  background(255);
+  background(60);
   if (radioBoxColumns) {
     for (column = 1; column < radioBoxColumns.length; column++) {
       for (accidental = 0; accidental < 3; accidental++) {
@@ -139,7 +140,7 @@ function draw() {
 }
 
 function updateVoiceGains() {
-//???
+//??? try setInput() an amp
 }
 
 function updateWaveType() {
@@ -203,7 +204,7 @@ function mousePressed() {
     filterADSRSliders[knob].active();
     ampADSRSliders[knob].active();
   }
-  for (column = 1; column < radioBoxColumns.length; column++) {
+  for (column = 1; column < radioBoxColumns.length; column++) { // try to find some way to redo this as .actice() like the rest of the class functions here
     for (accidental = 0; accidental < 3; accidental++) {
       radioBoxColumns[column][accidental].clicked(mouseX, mouseY, column, accidental);
     }
