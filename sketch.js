@@ -1,18 +1,18 @@
 // spacing and positioning
 var widthC = 800;
-var heightC = 565;
+var heightC = 575;
 
 var radioSize = 20;
 var horizSpacingFactor = 90; // space between each function's column
 var vertSpacingFactor = 30; // space between boxes in same column
 var radioOffset = 10; // Vertical offset to make room for the number on top
-var nonTonicRadiosX = 200;
+var nonTonicRadiosX = 210;
 var nonTonicRadiosY = 100;
-var voicingKnobX = 143;
-var voicingKnobY = 300;
+var voicingKnobX = 110;
+var voicingKnobY = 310;
 var voicingVertSpaceFactor = 70;
-var filterADSRx = 480;
-var filterADSRy = 280;
+var filterADSRx = 510;
+var filterADSRy = 290;
 var volKnobX = filterADSRx + 187;
 var volKnobY = filterADSRy + 195;
 var ampADSRx = filterADSRx + 150;
@@ -66,7 +66,7 @@ function setup() {
   for (degree = 1; degree < 7; degree++) {
     let accidentalColumn = [];
     for (accidental = 0; accidental < 3; accidental++) {
-      accidentalColumn[accidental] = new RadioBox(nonTonicRadiosX + 20, nonTonicRadiosY, degree, accidental, 'orange');
+      accidentalColumn[accidental] = new RadioBox(nonTonicRadiosX, nonTonicRadiosY, degree, accidental, 'orange');
       accidentalColumn[accidental].stroke = 0;
       accidentalColumn[accidental].alpha = 80;
       if (accidental === 1) { // initialize natural radio boxes
@@ -77,8 +77,10 @@ function setup() {
     radioBoxColumns[degree] = accidentalColumn;
   }
 
-  keyKnob = new Knob(20, nonTonicRadiosX - 60, nonTonicRadiosY + 50, 0, 11, 3, 12);
-
+  keyKnob = new Knob(20, nonTonicRadiosX - 80, nonTonicRadiosY + 50, 0, 11, 3, 12);
+  glideSlider = new Slider(widthC - 45, nonTonicRadiosY + 20, 10, 20, 85, 0, 'vertical');
+  //text('Glide', widthC - 45, nonTonicRadiosY);
+  
   ampEnv = new p5.Envelope();
   filterEnv = new p5.Envelope();
 
@@ -86,8 +88,8 @@ function setup() {
 
   for (i = 0; i < 4; i++) {
     voicingKnobs[i] = new Knob(30, voicingKnobX, voicingKnobY + voicingVertSpaceFactor * i, 0, 7, 7 - i * 2, 8);
-    oscKnobs[i] = new Knob(22, voicingKnobX + 130, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, i, 4);
-    voiceVolSliders[i] = new Slider(voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * i - 10, 10, 20, 70, 75, 'horizontal');
+    oscKnobs[i] = new Knob(22, voicingKnobX + 200, voicingKnobY + voicingVertSpaceFactor * i, 0, 3, i, 4);
+    voiceVolSliders[i] = new Slider(voicingKnobX + 250, voicingKnobY + voicingVertSpaceFactor * i - 10, 10, 20, 70, 75, 'horizontal');
     filterADSRSliders[i] = new Slider(filterADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesFilterASDR[i], 'vertical');
     ampADSRSliders[i] = new Slider(ampADSRx + i * ADSRhorizSpacing, filterADSRy, 10, 20, 75, intitialValuesAmpASDR[i], 'vertical');
     oscillators[i] = new p5.Oscillator(waveTypeArr[i]);
@@ -116,6 +118,9 @@ function draw() {
 
   keyKnob.update()
   keyKnobVal = floor(keyKnob.knobValue);
+
+  glideSlider.update();
+
   volKnob.update();
 
   for (knob = 0; knob < voicingKnobs.length; knob++) {
@@ -128,6 +133,7 @@ function draw() {
 
   xyController.update();
 
+  updateGlide();
   updateWaveType();
   updateEnvs();
   updateChord();
@@ -135,8 +141,63 @@ function draw() {
   updateVolumes();
 
   drawText();
+  drawGUILines();
 }
 
+function updateGlide() {
+  glide = map(glideSlider.sliderValue, 0, 100, 0, 1);
+
+
+}
+
+function drawGUILines() {
+  let radius = 6;
+  stroke(50);
+  strokeWeight(6);
+  fill(0, 0);
+  
+  // box around scales
+  rect(10, nonTonicRadiosY - radioSize - 2, widthC - 20, 150, radius);
+
+  // box around 'scale' label
+  rect(10, nonTonicRadiosY - radioSize - 2, 50, 150, radius);
+
+  // box around glide section
+  rect(widthC - 80, nonTonicRadiosY - radioSize - 2, 70, 150, radius);
+
+  // box around 'glide' title
+  rect(widthC - 80, nonTonicRadiosY - radioSize - 2, 70, 32, radius);
+
+  // box around voicings
+  rect(10, voicingKnobY - 82, widthC - 20, 330, radius);
+
+  // box around 'voicing' label
+  rect(10, voicingKnobY - 82, 50, 330, radius);
+
+  // box around voicingKnobs label
+  rect(60, voicingKnobY - 82, 100, 330, radius);
+
+  // box around 'inversion' label
+  rect(60, voicingKnobY - 82, 100, 32, radius);
+
+  // box around chord section
+  rect(voicingKnobX + 50, voicingKnobY - 82, 100, 330, radius);
+
+  // box around 'chord' title
+  rect(voicingKnobX + 50, voicingKnobY - 82, 100, 32, radius);
+
+  // box around osc section
+  rect(voicingKnobX + 150, voicingKnobY - 82, 200, 330, radius);
+
+  // box around 'Oscillators' title
+  rect(voicingKnobX + 150, voicingKnobY - 82, 200, 32, radius);
+
+  // box around env section
+  rect(voicingKnobX + 350, voicingKnobY - 82, 330, 330, radius);
+
+  // box around 'Envelopes' title
+  rect(voicingKnobX + 350, voicingKnobY - 82, 330, 32, radius);
+}
 
 function updateWaveType() {
   for (i = 0; i < oscillators.length; i++) {
@@ -202,6 +263,7 @@ function mousePressed() {
       radioBoxColumns[column][accidental].clicked(mouseX, mouseY, column, accidental);
     }
   }
+  glideSlider.active();
   xyController.active();
 }
 
@@ -215,6 +277,7 @@ function mouseReleased() {
     filterADSRSliders[knob].inactive();
     ampADSRSliders[knob].inactive();
   }
+  glideSlider.inactive();
   xyController.inactive();
 }
 
@@ -259,15 +322,7 @@ function updateChord() {
 
   for (i = 0; i < oscillators.length; i++) {
     oscillators[i].freq(freqOctaves[i][noteNames.indexOf(chordNotesNamed[i])], glide); // use note names from voicing array to get frequencies from freqOctaves array
-  } ////// add another slider for glide
-
-
-
-
-
-
-  //put this into a loop to set freqs (from ver1) 
-  // oscB.freq(freqsOctave1[noteNames.indexOf(voicingNotes[0])]);
+  }  
 }
 
 function getAccidental(position) {
@@ -294,15 +349,15 @@ function drawText() {
 
   textAlign(CENTER);
   textSize(15);
-  rotate(radians(270)); // all sideways text
+  rotate(radians(270)); // all sideways text from here to the next rotate() call
   text("- Scale -", -150, 40);
   text("- Voicing -", -390, 40);
-  text("resonance", -475, 470);
-  rotate(radians(90));
+  text("resonance", -475, 500);
+  rotate(radians(90)); // rotate back to 0 degrees for normal text
 
   for (i = 0; i < 7; i++) { // display function alterations and scale notes
-    text(getAccidental(i) + (i + 1), nonTonicRadiosX + 30 + horizSpacingFactor * (i - 1), nonTonicRadiosY);
-    text(scaleNotes[i], nonTonicRadiosX + 30 + horizSpacingFactor * (i - 1), nonTonicRadiosY + 115);
+    text(getAccidental(i) + (i + 1), nonTonicRadiosX + 10 + horizSpacingFactor * (i - 1), nonTonicRadiosY);
+    text(scaleNotes[i], nonTonicRadiosX + 10 + horizSpacingFactor * (i - 1), nonTonicRadiosY + 115);
   }
 
   for (knob = 0; knob < voicingKnobs.length; knob++) { // display voicing function and osc selection
@@ -319,11 +374,11 @@ function drawText() {
     }
 
     fill('orange');
-    text(note, voicingKnobX + 70, voicingKnobY + voicingVertSpaceFactor * knob);
+    text(note, voicingKnobX + 100, voicingKnobY + voicingVertSpaceFactor * knob);
 
     fill('black');
     text(voicingVal, voicingKnobX, voicingKnobY + 4 + voicingVertSpaceFactor * knob);
-    text(oscVal, voicingKnobX + 130, voicingKnobY + 4 + voicingVertSpaceFactor * knob);
+    text(oscVal, voicingKnobX + 200, voicingKnobY + 4 + voicingVertSpaceFactor * knob);
   }
 
   adsrLables = ['A', 'D', 'S', 'R']
@@ -338,6 +393,13 @@ function drawText() {
   text('amp', ampADSRx + 2 * ADSRhorizSpacing, filterADSRy - 10);
 
   textAlign(CENTER);
+  text('Glide', widthC - 45, nonTonicRadiosY);
+  text('Inversion', voicingKnobX, voicingKnobY - 60);
+  text('Chord', voicingKnobX + 100, voicingKnobY - 60);
+  text('Oscillators', voicingKnobX + 250, voicingKnobY - 60);
+  text('Envelopes', voicingKnobX + 515, voicingKnobY - 60);
+  text('type', voicingKnobX + 200, filterADSRy - 10);
+  text('mix', voicingKnobX + 285, filterADSRy - 10);
   text('output', volKnobX, xyControllerY - 10)
 }
 

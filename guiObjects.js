@@ -369,7 +369,8 @@ class XyController {
   }
 
   drawBox() {
-    strokeWeight(3);
+    strokeWeight(6);
+    stroke(50);
     fill(50);
     rect(this.x, this.y, this.size, this.size, 10);
 
@@ -383,7 +384,7 @@ class XyController {
   }
 
   drawDot() {
-    let alpha = 150;
+    let alpha = 165;
     if (this.dragging) {
       alpha = 255;
       this.dotX = mouseX + this.offsetX;
@@ -407,8 +408,7 @@ class XyController {
     dotColor.setAlpha(alpha);
     fill(dotColor);
     ellipse(this.dotX, this.dotY, this.dotSize);
-    dotColor.setAlpha(255);
-    fill(dotColor);
+    fill('orange');
     ellipse(this.dotX, this.dotY, this.dotSize / 2); // inner circle
   }
 
