@@ -21,23 +21,27 @@ class Knob {
       translate(this.x, this.y);
       if (dist(this.x, this.y, mouseX, mouseY) < this.radius) {
         this.mouseOver = true;
-      }
-      else {
+      } else {
         this.mouseOver = false;
       }
       if (mouseIsPressed && this.isClickedOn) {
-        this.rotateMe = this.currentRot + map(mouseY, this.myY, widthC, 0, heightC);
+        this.rotateMe =
+          this.currentRot + map(mouseY, this.myY, widthC, 0, heightC);
 
         if (this.rotateMe < -280) {
           this.rotateMe = -280;
         }
 
-        if (this.rotateMe < 0 && this.rotateMe > 0 - this.spacing) { // first notch
+        if (this.rotateMe < 0 && this.rotateMe > 0 - this.spacing) {
+          // first notch
           this.rotateMe = 0;
         }
 
         for (i = 1; i < this.notches; i++) {
-          if (this.rotateMe < -this.spacing * (i - 1) - this.spacing / 2 && this.rotateMe > - this.spacing * (i) - this.spacing / 2) {
+          if (
+            this.rotateMe < -this.spacing * (i - 1) - this.spacing / 2 &&
+            this.rotateMe > -this.spacing * i - this.spacing / 2
+          ) {
             this.rotateMe = floor(-this.spacing * i);
           }
         }
@@ -48,8 +52,7 @@ class Knob {
 
         this.knobValue = floor(map(this.rotateMe, -280, 0, hiNum, lowNum));
         rotate(radians(-this.rotateMe)); // change degrees to radians
-      }
-      else {
+      } else {
         rotate(radians(-this.rotateMe));
       }
       if (!mouseIsPressed) {
@@ -61,7 +64,7 @@ class Knob {
       ellipseMode(RADIUS);
       strokeWeight(3);
       stroke(this.stroke);
-      fill('orange');
+      fill(123, 234, 243);
       rotate(radians(-50));
       ellipse(0, 0, this.radius, this.radius);
       line(1 - this.radius, 0, 7 - this.radius, 0);
@@ -71,34 +74,34 @@ class Knob {
 
       // set the cursor
       if (this.mouseOver && !this.isClickedOn) {
-        cursor('pointer'); /// THIS WORKS???
-        this.stroke = 100;
+        cursor("pointer"); /// THIS WORKS???
+        let hoverColor = color(224, 113, 82, 220);
+        this.stroke = hoverColor;
       } else if (this.isClickedOn) {
-        cursor('grab')
+        cursor("grab");
       } else {
-        this.stroke = 0;
+        let nonHoverColor = color(0, 255)
+        this.stroke = nonHoverColor;      
       }
-    }
+    };
 
     this.active = function () {
       if (this.mouseOver) {
         this.isClickedOn = true;
         this.myY = mouseY;
-        cursor('pointer');
-      }
-      else {
+        cursor("pointer");
+      } else {
         this.isClickedOn = false;
       }
-    }
+    };
 
     this.inactive = function () {
       this.currentRot = this.rotateMe;
       this.isClickedOn = false;
-      cursor('default');
-    }
+      cursor("default");
+    };
   }
 }
-
 
 class RadioBox {
   constructor(x, y, scaleDeg, accidental, color) {
@@ -118,19 +121,20 @@ class RadioBox {
     var inRadioYRange = y > this.y && y < this.y + radioSize;
 
     if (inRadioXRange && inRadioYRange && !this.selected) {
-      this.stroke = 150;
+      let hoverColor = color(224, 113, 82, 220);
+      this.stroke = hoverColor;
       // cursor('pointer'); /// DOESN"T WORK???? (only works for very last box)
     } else {
-      this.stroke = 0;
+      let nonHoverColor = color(0, 200);
+      this.stroke = nonHoverColor;
       cursor(ARROW);
     }
-
   }
 
   show() {
-    let boxColor = color(this.color);
-    boxColor.setAlpha(this.alpha);
-    fill(boxColor);
+    // let boxColor = color(this.color);
+    // boxColor.setAlpha(this.alpha);
+    fill(123, 234, 243, this.alpha);
     stroke(this.stroke);
     strokeWeight(2);
     rect(this.x, this.y, radioSize, radioSize, 4);
@@ -143,11 +147,10 @@ class RadioBox {
     alterationArr[this.scaleDeg] = this.accidentalValue;
 
     for (let scaleDeg = 0; scaleDeg < alterationArr.length; scaleDeg++) {
-      scaleKernelAfterAlteration[scaleDeg] = natScaleIntervals[scaleDeg] + alterationArr[scaleDeg];
+      scaleKernelAfterAlteration[scaleDeg] =
+        natScaleIntervals[scaleDeg] + alterationArr[scaleDeg];
     }
   }
-
-
 
   clicked(x, y, column, selectedAccidental) {
     var inRadioXRange = x > this.x && x < this.x + radioSize;
@@ -157,18 +160,25 @@ class RadioBox {
       this.alpha = 220;
       this.selected = true;
 
-      for (accidental = 0; accidental < radioBoxColumns[column].length; accidental++) {
+      for (
+        accidental = 0;
+        accidental < radioBoxColumns[column].length;
+        accidental++
+      ) {
         if (accidental !== selectedAccidental) {
           radioBoxColumns[column][accidental].alpha = 80; // deselect other radio boxes in the same column
           radioBoxColumns[column][accidental].selected = false;
         }
       }
 
-      if (selectedAccidental === 0) { // if sharp 
+      if (selectedAccidental === 0) {
+        // if sharp
         this.accidentalValue = 1;
-      } else if (selectedAccidental === 1) { // if natural
+      } else if (selectedAccidental === 1) {
+        // if natural
         this.accidentalValue = 0;
-      } else {                        // if flat
+      } else {
+        // if flat
         this.accidentalValue = -1;
       }
 
@@ -184,8 +194,8 @@ class Slider {
     this.sliderW = sliderW;
     this.sliderH = sliderH;
     this.length = length;
-    this.defaultVal = defaultVal
-    this.orientation = orientation; // 'horizontal' or 'vertical', (else statments throughout the class will go to horizontal)
+    this.defaultVal = defaultVal;
+    this.orientation = orientation; // 'horizontal' or 'vertical', (else statements throughout the class will go to horizontal)
 
     this.x2 = x + length;
     this.y2 = y + sliderH / 2;
@@ -199,18 +209,26 @@ class Slider {
   }
 
   setDefault() {
-    if (this.orientation === 'vertical') {
-      this.handleY = floor(map(this.defaultVal, 0, 100, this.y + this.length, this.y));
+    if (this.orientation === "vertical") {
+      this.handleY = floor(
+        map(this.defaultVal, 0, 100, this.y + this.length, this.y)
+      );
     } else {
-      this.handleX = floor(map(this.defaultVal, 0, 100, this.x, this.x + this.length));
+      this.handleX = floor(
+        map(this.defaultVal, 0, 100, this.x, this.x + this.length)
+      );
     }
   }
 
   determineValue() {
-    if (this.orientation === 'vertical') {
-      this.sliderValue = floor(map(this.handleY, this.y + this.length, this.y, 0, 100));
+    if (this.orientation === "vertical") {
+      this.sliderValue = floor(
+        map(this.handleY, this.y + this.length, this.y, 0, 100)
+      );
     } else {
-      this.sliderValue = floor(map(this.handleX, this.x, this.x + this.length, 0, 100));
+      this.sliderValue = floor(
+        map(this.handleX, this.x, this.x + this.length, 0, 100)
+      );
     }
   }
 
@@ -220,14 +238,19 @@ class Slider {
     let rightEdge = this.handleX - this.sliderW / 2;
     let leftEdge = this.handleX + this.sliderW;
 
-    if (this.orientation === 'vertical') {
+    if (this.orientation === "vertical") {
       upperEdge = this.handleY;
       lowerEdge = this.handleY + this.sliderH / 2;
       rightEdge = this.handleX - this.sliderH / 2;
       leftEdge = this.handleX + this.sliderH / 2;
     }
 
-    if (mouseX > rightEdge && mouseX < leftEdge && mouseY > upperEdge && mouseY < lowerEdge) {
+    if (
+      mouseX > rightEdge &&
+      mouseX < leftEdge &&
+      mouseY > upperEdge &&
+      mouseY < lowerEdge
+    ) {
       this.hover = true;
     } else {
       this.hover = false;
@@ -235,17 +258,18 @@ class Slider {
   }
 
   drawSliderHandle() {
-    fill('orange');
+    fill(123, 234, 243);
     if (this.dragging) {
-      if (this.orientation === 'vertical') { // handle extreemes for vert
+      if (this.orientation === "vertical") {
+        // handle extreemes for vert
         this.handleY = mouseY + this.offset;
         if (this.handleY <= this.y) {
           this.handleY = this.y;
         } else if (this.handleY >= this.y + this.length) {
           this.handleY = this.y + this.length;
         }
-
-      } else {  // handle extreemes for horiz
+      } else {
+        // handle extreemes for horiz
         this.handleX = mouseX + this.offset;
         if (this.handleX >= this.x + this.length) {
           this.handleX = this.x + this.length;
@@ -256,9 +280,11 @@ class Slider {
     }
 
     if (this.dragging || this.hover) {
-      this.stroke = 100;
+      let hoverColor = color(224, 113, 82, 220);
+      this.stroke = hoverColor;
     } else {
-      this.stroke = 0;
+      let nonHoverColor = color(0, 200)
+      this.stroke = nonHoverColor;
     }
 
     stroke(this.stroke);
@@ -266,7 +292,7 @@ class Slider {
 
     let tempW = this.sliderW;
     let tempH = this.sliderH;
-    if (this.orientation === 'vertical') {
+    if (this.orientation === "vertical") {
       [tempW, tempH] = [tempH, tempW];
     }
 
@@ -276,9 +302,10 @@ class Slider {
   }
 
   drawTrack() {
+    stroke(224, 113, 82);
     let tempW = this.sliderW;
     let tempH = this.sliderH;
-    if (this.orientation === 'vertical') {
+    if (this.orientation === "vertical") {
       [tempW, tempH] = [tempH, tempW];
     }
     line(this.x, this.y + tempH / 2, this.x2, this.y2); // track
@@ -298,22 +325,22 @@ class Slider {
     //   print(this.sliderValue);
     // }
 
-    if (this.orientation === 'vertical') {
+    if (this.orientation === "vertical") {
       this.x2 = this.x;
       this.y2 = this.y + this.length + this.sliderW / 2;
     }
 
     if (this.hover && !this.dragging) {
-      cursor('pointer');
+      cursor("pointer");
     } else if (this.dragging) {
-      cursor('grab');
+      cursor("grab");
     }
   }
 
   active() {
     if (this.hover) {
       this.dragging = true;
-      if (this.orientation === 'vertical') {
+      if (this.orientation === "vertical") {
         this.offset = this.handleY - mouseY;
       } else {
         this.offset = this.handleX - mouseX;
@@ -327,13 +354,16 @@ class Slider {
 }
 
 class XyController {
-  constructor(x, y, size, defaultX, defaultY) { 
+  constructor(x, y, size, defaultX, defaultY) {
     this.x = x;
     this.y = y;
     this.size = size;
     this.defaultX = defaultX;
-    this.defaultY = defaultY
+    this.defaultY = defaultY;
 
+    this.gridStroke = color(123, 234, 243, 100);
+    this.outerDotColor = color(123, 234, 243, 200);
+    this.innerDotColor = color(224, 113, 82, 220);
     this.dotSize = 20;
     this.edge = this.dotSize / 3;
     this.dotX = floor(map(defaultX, 0, 100, x, x + size));
@@ -349,39 +379,65 @@ class XyController {
   }
 
   determineValue() {
-    this.controllerXValue = round(map(this.dotX, this.x + this.size - this.edge, this.x + this.edge, 100, 0));
-    this.controllerYValue = round(map(this.dotY, this.y + this.size - this.edge, this.y + this.edge, 0, 100));
+    this.controllerXValue = round(
+      map(this.dotX, this.x + this.size - this.edge, this.x + this.edge, 100, 0)
+    );
+    this.controllerYValue = round(
+      map(this.dotY, this.y + this.size - this.edge, this.y + this.edge, 0, 100)
+    );
   }
 
   determineHover() {
-    if (mouseX > this.x && mouseX < this.x + this.size && mouseY > this.y && mouseY < this.y + this.size) {
+    if (
+      mouseX > this.x &&
+      mouseX < this.x + this.size &&
+      mouseY > this.y &&
+      mouseY < this.y + this.size
+    ) {
       this.boxHover = true;
+      // this.gridStroke = color(123, 234, 243, 100);
     } else {
       this.boxHover = false;
+      // this.gridStroke = color(123, 234, 243, 100);
     }
 
     let d = dist(this.dotX, this.dotY, mouseX, mouseY);
     if (d < this.dotSize / 2) {
       this.dotHover = true;
+      // this.innerDotColor = color(123, 234, 243);
+      // this.outerDotColor = color(224, 113, 82, 220);
     } else {
       this.dotHover = false;
+      // this.innerDotColor = color(224, 113, 82, 220);
+      // this.outerDotColor = color(123, 234, 243, 220);
     }
   }
 
   drawBox() {
     strokeWeight(6);
-    stroke(50);
-    fill(50);
+    stroke(123, 234, 243);
+    fill(123, 234, 243, 30);
     rect(this.x, this.y, this.size, this.size, 10);
 
     for (i = 0; i < 10; i++) {
-      let spacingFactor = i * this.size / 10 + (this.size / 10) / 2;
-      strokeWeight(.5);
-      stroke(110);
-      line(this.x + spacingFactor, this.y + 3, this.x + spacingFactor, this.y + this.size - 3);
-      line(this.x + 3, this.y + spacingFactor, this.x + this.size - 3, this.y + spacingFactor);
+      let spacingFactor = (i * this.size) / 10 + this.size / 10 / 2;
+      strokeWeight(0.5);
+      stroke(this.gridStroke);
+      line(
+        this.x + spacingFactor,
+        this.y + 3,
+        this.x + spacingFactor,
+        this.y + this.size - 3
+      );
+      line(
+        this.x + 3,
+        this.y + spacingFactor,
+        this.x + this.size - 3,
+        this.y + spacingFactor
+      );
     }
   }
+
 
   drawDot() {
     let alpha = 165;
@@ -390,13 +446,15 @@ class XyController {
       this.dotX = mouseX + this.offsetX;
       this.dotY = mouseY + this.offsetY;
 
-      if (this.dotX >= this.x + this.size - this.edge) { // handle x extreemes
+      if (this.dotX >= this.x + this.size - this.edge) {
+        // handle x extremes
         this.dotX = this.x + this.size - this.edge;
       } else if (this.dotX <= this.x + this.edge) {
         this.dotX = this.x + this.edge;
       }
 
-      if (this.dotY >= this.y + this.size - this.edge) { // handle y extreemes
+      if (this.dotY >= this.y + this.size - this.edge) {
+        // handle y extremes
         this.dotY = this.y + this.size - this.edge;
       } else if (this.dotY <= this.y + this.edge) {
         this.dotY = this.y + this.edge;
@@ -404,14 +462,13 @@ class XyController {
     }
 
     stroke(0);
-    let dotColor = color('orange');
-    dotColor.setAlpha(alpha);
-    fill(dotColor);
+    // let dotColor = color(123, 234, 243);
+    // dotColor.setAlpha(alpha);
+    fill(this.outerDotColor);
     ellipse(this.dotX, this.dotY, this.dotSize);
-    fill('orange');
+    fill(this.innerDotColor);
     ellipse(this.dotX, this.dotY, this.dotSize / 2); // inner circle
   }
-
 
   update() {
     this.determineHover();
@@ -424,9 +481,16 @@ class XyController {
     // }
 
     if (this.dotHover && !this.dragging) {
-      cursor('pointer');
+      cursor("pointer");
+      this.innerDotColor = color(123, 234, 243, 200);
+      this.outerDotColor = color(224, 113, 82, 220);
     } else if (this.dragging) {
+      this.innerDotColor = color(224, 113, 82, 220);
+      this.outerDotColor = color(224, 113, 82, 220);
       noCursor();
+    } else {
+      this.innerDotColor = color(224, 113, 82, 220);
+      this.outerDotColor = color(123, 234, 243, 220);
     }
   }
 
@@ -435,6 +499,9 @@ class XyController {
       this.dragging = true;
       this.offsetX = this.dotX - mouseX;
       this.offsetY = this.dotY - mouseY;
+    }  
+    if (mouseIsPressed) {
+      
     }
   }
 

@@ -63,11 +63,14 @@ var intitialValuesAmpASDR = [7, 22, 20, 9];
 
 
 function setup() {
-  createCanvas(widthC, heightC);
+  var canvas = createCanvas(widthC, heightC);
+  // canvas.parent('sketch-holder');
+
+
   for (degree = 1; degree < 7; degree++) {
     let accidentalColumn = [];
     for (accidental = 0; accidental < 3; accidental++) {
-      accidentalColumn[accidental] = new RadioBox(nonTonicRadiosX, nonTonicRadiosY, degree, accidental, 'orange');
+      accidentalColumn[accidental] = new RadioBox(nonTonicRadiosX, nonTonicRadiosY, degree, accidental, (123, 234, 243));
       accidentalColumn[accidental].stroke = 0;
       accidentalColumn[accidental].alpha = 80;
       if (accidental === 1) { // initialize natural radio boxes
@@ -84,7 +87,6 @@ function setup() {
   
   ampEnv = new p5.Envelope();
   filterEnv = new p5.Envelope();
-
   LpFilter = new p5.LowPass();
 
   for (i = 0; i < 4; i++) {
@@ -108,7 +110,10 @@ function setup() {
 }
 
 function draw() {
-  background(75);
+  fill(5, 41, 66);
+  strokeWeight(0);
+  rect(0, 0, widthC, heightC, 25);
+  
   if (radioBoxColumns) {
     for (column = 1; column < radioBoxColumns.length; column++) {
       for (accidental = 0; accidental < 3; accidental++) {
@@ -117,13 +122,9 @@ function draw() {
     }
   }
 
-  
-
   keyKnob.update()
   keyKnobVal = floor(keyKnob.knobValue);
-
   glideSlider.update();
-
   volKnob.update();
 
   for (knob = 0; knob < voicingKnobs.length; knob++) {
@@ -154,26 +155,22 @@ function updateFFTViz() {
   noFill();
   beginShape();
   strokeWeight(4.8);
-  stroke('orange');
+  stroke(123,234,243);
   for (let i = 0; i < waveform.length; i++){
-    let x = map(i, 0, waveform.length, 333, widthC - 20);
+    let x = map(i, 0, waveform.length, 345, widthC - 20);
     let y = map( waveform[i], -1, 1, -54.6, 119.3);
     vertex(x,y);
   }
   endShape();
-
-
 }
 
 function updateGlide() {
   glide = map(glideSlider.sliderValue, 0, 100, 0, 1);
-
-
 }
 
 function drawGUILines() {
   let radius = 6;
-  stroke(50);
+  stroke(123,234,243);
   strokeWeight(6);
   fill(0, 0);
   
@@ -221,6 +218,9 @@ function drawGUILines() {
 
   // box around 'Envelopes' title
   rect(voicingKnobX + 350, voicingKnobY - 82, 330, 32, radius);
+
+  // box around the whole thing
+  rect(10, nonTonicRadiosY - radioSize - 2, widthC - 20, heightC - nonTonicRadiosY + 5, radius);
 }
 
 function updateWaveType() {
@@ -318,10 +318,8 @@ function updateEnvs() {
   for (i = 0; i < oscillators.length; i++) {
     ampEnvArr[i].setADSR(...ampADSRVars);
   }
-  
+
   filterEnv.setADSR(...filterADSRVars);
-
-
   filterEnv.setRange(cutOff, 100);
   LpFilter.freq(filterEnv);
   LpFilter.res(res);
@@ -369,7 +367,7 @@ function drawText() {
   textAlign(LEFT);
   textSize(45);
   textStyle(ITALIC);
-  fill('orange')
+  fill(123,234,243)
   text("Modal Explorer", 25, 55);
 
   textAlign(CENTER);
@@ -401,11 +399,11 @@ function drawText() {
       note = '';
     }
 
-    fill('orange');
+    fill(123,234,243);
     textSize(16);
     text(note, voicingKnobX + 100, voicingKnobY + voicingVertSpaceFactor * knob);
 
-    fill('black');
+    fill(5, 41, 66);
     textSize(12);
     text(voicingVal, voicingKnobX, voicingKnobY + 4 + voicingVertSpaceFactor * knob);
     text(oscVal, voicingKnobX + 200, voicingKnobY + 4 + voicingVertSpaceFactor * knob);
@@ -413,7 +411,7 @@ function drawText() {
 
   adsrLables = ['A', 'D', 'S', 'R']
   for (slider = 0; slider < ampADSRSliders.length; slider++) {
-    fill('orange');
+    fill(123,234,243);
     text(adsrLables[slider], filterADSRx + slider * ADSRhorizSpacing, filterADSRy + 100)
     text(adsrLables[slider], ampADSRx + slider * ADSRhorizSpacing, filterADSRy + 100)
   }
