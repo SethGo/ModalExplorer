@@ -139,7 +139,9 @@ class RadioBox {
     strokeWeight(2);
     rect(this.x, this.y, radioSize, radioSize, 4);
     stroke(0);
-    this.hover(mouseX, mouseY);
+    if (rbKnobVal == 0){
+      this.hover(mouseX, mouseY);
+    }
   }
 
   updateScale() {
