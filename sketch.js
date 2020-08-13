@@ -19,6 +19,7 @@ var ampADSRx = filterADSRx + 150;
 var ADSRhorizSpacing = 28;
 var xyControllerX = filterADSRx;
 var xyControllerY = filterADSRy + 150;
+var standardTurnLim = -280;
 
 // gui objects
 var radioBoxColumns = [];
@@ -37,6 +38,7 @@ var scaleNotes = [];
 var rbAlterationArrMaster = [];
 var keyKnobVal = 3;
 var rbKnobVal = 0;
+var rbOn = false;
 var voicingKernel = [];
 var chord = [];
 var chordNotesNamed = [];
@@ -151,7 +153,7 @@ function setup() {
         }
         radioBoxColumns[degree] = accidentalColumn;
     }
-    console.log('check1')
+
     keyKnob = new Knob(
         20,
         nonTonicRadiosX - 70,
@@ -159,7 +161,8 @@ function setup() {
         0,
         11,
         3,
-        12
+        12,
+        -330
     );
     glideSlider = new Slider(
         widthC - 47.5,
@@ -170,7 +173,7 @@ function setup() {
         0,
         "vertical"
     );
-    rbKnob = new Knob(20, widthC - 122, nonTonicRadiosY + 50, 0, 18, 0, 19);
+    rbKnob = new Knob(20, widthC - 122, nonTonicRadiosY + 50, 0, 18, 0, 19, standardTurnLim);
 
     ampEnv = new p5.Envelope();
     filterEnv = new p5.Envelope();
@@ -184,7 +187,8 @@ function setup() {
             0,
             7,
             7 - i * 2,
-            8
+            8,
+            standardTurnLim
         );
         oscKnobs[i] = new Knob(
             22,
@@ -193,7 +197,8 @@ function setup() {
             0,
             3,
             i,
-            4
+            4,
+            standardTurnLim
         );
         voiceVolSliders[i] = new Slider(
             voicingKnobX + 250,
@@ -228,13 +233,21 @@ function setup() {
         ampEnvArr[i] = new p5.Envelope();
     }
 
-    volKnob = new Knob(39, volKnobX, volKnobY, 0, 100, 40, 100);
+    volKnob = new Knob(39, volKnobX, volKnobY, 0, 100, 40, 100, standardTurnLim);
     xyController = new XyController(xyControllerX, xyControllerY, 90, 50, 75);
 
     updateScaleNoteNames();
 
     fft = new p5.FFT();
     create18Modes();
+
+    // Disable default scrolling function when arrow keys are pressed
+    window.addEventListener("keydown", function(e) {
+        // space and arrow keys
+        if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+        }
+    }, false);
 }
 
 function draw() {
@@ -271,9 +284,24 @@ function draw() {
     updateWaveType();
     updateEnvs();
     updateChord();
+
+    // Use RB modes when knob is not set to off
     if (rbKnobVal != 0) {
+        rbOn = true;
         updateRbStatus();
     }
+
+    // Reset back to natural scale when turing RB mode off
+    if (rbOn && rbKnobVal == 0) {
+        for (degree = 1; degree < 7; degree++) {
+            radioBoxColumns[degree][0].alpha = 80;
+            radioBoxColumns[degree][1].alpha = 220;
+            radioBoxColumns[degree][2].alpha = 80;
+        }
+        scaleKernelAfterAlteration = [0, 2, 4, 5, 7, 9, 11];
+        rbOn = false;
+    }
+
 
     updateScaleNoteNames();
     updateVolumes();
@@ -311,14 +339,14 @@ function updateRbStatus() {
 }
 
 function create18Modes() {
-    let seconds = [0, -1, 1];
+    let seconds = [-1, 0, 1];
     let fourths = [0, 1];
-    let sixths = [0, -1, 1];
+    let sixths = [-1, 0, 1];
     index = 0;
     while (index < 18) {
-        for (sx in sixths) {
+        for (s in seconds) {
             for (f in fourths) {
-                for (s in seconds) {
+                for (sx in sixths) {
                     rbAlterationArrMaster[index] = [0, seconds[s], 0, fourths[f], 0, sixths[sx], 0]; // the 18 modes
                     index += 1;
                 }
@@ -429,8 +457,11 @@ function updateVolumes() {
 }
 
 function keyPressed() {
-    for (i = 0; i < oscillators.length; i++) {
-        oscillators[i].stop();
+    let arrows = [37, 38, 39, 40]; 
+    if (!arrows.includes(keyCode)) { // if pressed key is not an arrow...
+        for (i = 0; i < oscillators.length; i++) {
+            oscillators[i].stop();
+        }
     }
 
     userKey = parseInt(String.fromCharCode(keyCode));
@@ -446,10 +477,34 @@ function keyPressed() {
                 filterEnv.triggerAttack();
             }
         }
-    } else {
-        // Stop sound with any other key
-        for (i = 0; i < oscillators.length; i++) {
-            oscillators[i].stop();
+    }
+
+    // rbKnob left-right arrow key control
+    let rbRotValue = abs(standardTurnLim/18); 
+    if (keyCode == 37 && rbKnobVal != 0) {
+        rbKnob.knobValue = rbKnob.knobValue - 1;
+        rbKnob.rotateMe = rbKnob.rotateMe + rbRotValue;
+    } else if (keyCode == 39 && rbKnobVal != 18) {
+        rbKnob.knobValue = rbKnob.knobValue + 1;
+        rbKnob.rotateMe = rbKnob.rotateMe - rbRotValue;
+    } 
+    
+    // keyKnob up-down arrow key control
+    if (keyCode == 38) {
+        if (keyKnob.knobValue != 11) {
+            keyKnob.knobValue = keyKnob.knobValue + 1;
+            keyKnob.rotateMe = keyKnob.rotateMe - 360/12;
+        } else {
+            keyKnob.knobValue = 0;
+            keyKnob.rotateMe = 0;
+        }
+    } else if (keyCode == 40) {
+        if (keyKnob.knobValue != 0) {
+            keyKnob.knobValue = keyKnob.knobValue - 1;
+            keyKnob.rotateMe = keyKnob.rotateMe + 360/12;
+        } else {
+            keyKnob.knobValue = 11;
+            keyKnob.rotateMe = -330;
         }
     }
 }
@@ -596,7 +651,7 @@ function drawText() {
     text("resonance", -475, 500);
     rotate(radians(90)); // rotate back to 0 degrees for normal text
 
-    for (i = 0; i < 7; i++) { //TODO: Gotta pick up the sharps and flats
+    for (i = 0; i < 7; i++) { 
         // display function alterations and scale notes
         text(
             getAccidental(i) + (i + 1),

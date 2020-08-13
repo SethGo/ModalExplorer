@@ -1,12 +1,12 @@
 class Knob {
-  constructor(radius, locx, locy, lowNum, hiNum, defaultNum, notches) {
+  constructor(radius, locx, locy, lowNum, hiNum, defaultNum, notches, negTurnLimit) {
     this.x = locx;
     this.y = locy;
     this.lowNum = lowNum;
     this.hiNum = hiNum;
     this.notches = notches;
-    this.rotateMe = map(defaultNum, lowNum, hiNum, 0, -280);
-    this.currentRot = map(defaultNum, lowNum, hiNum, 0, -280);
+    this.rotateMe = map(defaultNum, lowNum, hiNum, 0, negTurnLimit);
+    this.currentRot = map(defaultNum, lowNum, hiNum, 0, negTurnLimit);
     this.radius = radius;
     this.knobValue = defaultNum;
     this.displayValue = 0;
@@ -14,7 +14,7 @@ class Knob {
     this.mouseOver = false;
     this.myY = mouseY;
     this.stroke = 0;
-    this.spacing = 280 / (this.notches - 1);
+    this.spacing = abs(negTurnLimit) / (this.notches - 1);
 
     this.update = function () {
       push();
@@ -28,8 +28,8 @@ class Knob {
         this.rotateMe =
           this.currentRot + map(mouseY, this.myY, widthC, 0, heightC);
 
-        if (this.rotateMe < -280) {
-          this.rotateMe = -280;
+        if (this.rotateMe < negTurnLimit) {
+          this.rotateMe = negTurnLimit;
         }
 
         if (this.rotateMe < 0 && this.rotateMe > 0 - this.spacing) {
@@ -50,7 +50,7 @@ class Knob {
           this.rotateMe = 0;
         }
 
-        this.knobValue = floor(map(this.rotateMe, -280, 0, hiNum, lowNum));
+        this.knobValue = floor(map(this.rotateMe, negTurnLimit, 0, hiNum, lowNum));
         rotate(radians(-this.rotateMe)); // change degrees to radians
       } else {
         rotate(radians(-this.rotateMe));
